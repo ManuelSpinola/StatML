@@ -1,0 +1,38 @@
+Package: StatML
+Title: Interactive Machine Learning Platform for Ecology and Data Science
+Version: 0.0.1
+Authors@R: 
+    person("Manuel", "Spínola", , "manuel.spinola@una.cr", role = c("aut", "cre"))
+Description: An interactive Shiny application for machine learning, part of the 
+    StatSuite ecosystem. Covers regression and classification using linear models, 
+    generalized linear models, and random forests with tidymodels. Designed for 
+    teaching and research in ecology, biodiversity sciences, and data science.
+License: MIT + file LICENSE
+URL: https://github.com/ManuelSpinola/StatML
+BugReports: https://github.com/ManuelSpinola/StatML/issues
+Imports:
+    bsicons,
+    bslib,
+    config (>= 0.3.2),
+    dplyr,
+    DT,
+    ggplot2,
+    glmnet,
+    golem (>= 0.5.1),
+    plotly,
+    pROC,
+    ranger,
+    readr,
+    readxl,
+    recipes,
+    rsample,
+    shiny (>= 1.9.1),
+    tidymodels,
+    tune,
+    vip,
+    workflows,
+    yardstick
+Encoding: UTF-8
+Language: es
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0
