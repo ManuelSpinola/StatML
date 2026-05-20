@@ -30,6 +30,7 @@ Imports:
     tidymodels,
     tune,
     vip,
+    performance,
     workflows,
     yardstick
 Encoding: UTF-8

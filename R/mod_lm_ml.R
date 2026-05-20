@@ -821,12 +821,12 @@ mod_lm_ml_server <- function(id) {
             ggplot2::ggplot(df, ggplot2::aes(x = .data[[x_v]], y = .data[[y_v]],
                                               color = .data[[col]])) +
               geom_pts +
-              ggplot2::geom_smooth(method = "lm", se = TRUE) +
+              ggplot2::geom_smooth(method = "lm", formula = y ~ x, se = TRUE) +
               scale_color_tableau_cb()
           } else {
             ggplot2::ggplot(df, ggplot2::aes(x = .data[[x_v]], y = .data[[y_v]])) +
               geom_pts +
-              ggplot2::geom_smooth(method = "lm", se = TRUE, color = colores$acento)
+              ggplot2::geom_smooth(method = "lm", formula = y ~ x, se = TRUE, color = colores$acento)
           }
         },
         "hist" = ggplot2::ggplot(df, ggplot2::aes(x = .data[[y_v]])) +
@@ -1046,7 +1046,7 @@ mod_lm_ml_server <- function(id) {
       p  <- ggplot2::ggplot(df, ggplot2::aes(x = fitted, y = residuals)) +
         ggplot2::geom_point(alpha = 0.5, color = colores$primario) +
         ggplot2::geom_hline(yintercept = 0, color = colores$acento, linetype = "dashed") +
-        ggplot2::geom_smooth(se = FALSE, color = colores$peligro, linewidth = 0.8) +
+        ggplot2::geom_smooth(method = "loess", formula = y ~ x, se = FALSE, color = colores$peligro, linewidth = 0.8) +
         ggplot2::theme_minimal() +
         ggplot2::labs(x = "Valores ajustados", y = "Residuos")
       plotly::ggplotly(p)
@@ -1071,7 +1071,7 @@ mod_lm_ml_server <- function(id) {
       df <- data.frame(fitted = at$fitted, sqrt_resid = sqrt(abs(at$residuals)))
       p  <- ggplot2::ggplot(df, ggplot2::aes(x = fitted, y = sqrt_resid)) +
         ggplot2::geom_point(alpha = 0.5, color = colores$primario) +
-        ggplot2::geom_smooth(se = FALSE, color = colores$peligro, linewidth = 0.8) +
+        ggplot2::geom_smooth(method = "loess", formula = y ~ x, se = FALSE, color = colores$peligro, linewidth = 0.8) +
         ggplot2::theme_minimal() +
         ggplot2::labs(x = "Valores ajustados", y = "√|Residuos estandarizados|")
       plotly::ggplotly(p)
