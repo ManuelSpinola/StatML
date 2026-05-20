@@ -26,7 +26,7 @@ colores <- list(
 )
 
 # ── Tema visual (idéntico a StatSuite) ─────────────────────
-tema_app <- bs_theme(
+tema_app <- bslib::bs_theme(
   version      = 5,
   bg           = colores$fondo,
   fg           = colores$texto,
@@ -35,11 +35,11 @@ tema_app <- bs_theme(
   success      = colores$exito,
   danger       = colores$peligro,
   warning      = colores$advertencia,
-  base_font    = font_google("Nunito"),
-  heading_font = font_google("Nunito", wght = 700),
+  base_font    = bslib::font_google("Nunito"),
+  heading_font = bslib::font_google("Nunito", wght = 700),
   bootswatch   = NULL
 ) |>
-  bs_add_rules("
+  bslib::bs_add_rules("
   .navbar { background-color: #1170AA !important; }
   .navbar-brand { color: #ffffff !important; display: flex !important;
                   align-items: center !important;
@@ -103,10 +103,10 @@ tema_app <- bs_theme(
 
 # ── Escalas ggplot2 (Tableau Color Blind) ─────────────────
 scale_fill_tableau_cb <- function(...) {
-  scale_fill_manual(values = colores$tableau, ...)
+  ggplot2::scale_fill_manual(values = colores$tableau, ...)
 }
 scale_color_tableau_cb <- function(...) {
-  scale_color_manual(values = colores$tableau, ...)
+  ggplot2::scale_color_manual(values = colores$tableau, ...)
 }
 
 # ── Encabezado estándar de scripts R ──────────────────────
