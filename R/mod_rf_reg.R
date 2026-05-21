@@ -832,7 +832,8 @@ mod_rf_reg_server <- function(id) {
     output$tabla_vista_previa <- DT::renderDT({
       req(datos_raw())
       DT::datatable(datos_raw(),
-        options = list(scrollX = TRUE, pageLength = 10, dom = "tip"),
+        options = list(scrollX = TRUE, pageLength = 10, dom = "tip",
+                       scrollY = "350px", scrollCollapse = TRUE),
         rownames = FALSE)
     })
 
@@ -1104,8 +1105,13 @@ mod_rf_reg_server <- function(id) {
           size = input$grid_size
         )
 
-        res <- tune::tune_grid(wf, resamples = folds, grid = grid,
-          metrics = yardstick::metric_set(yardstick::rmse, yardstick::rsq))
+        shiny::withProgress(message = "Buscando hiperparámetros...", value = 0, {
+          shiny::incProgress(0.1, detail = paste0(nrow(grid), " combinaciones × ",
+                             input$cv_folds_tuning, " folds"))
+          res <- tune::tune_grid(wf, resamples = folds, grid = grid,
+            metrics = yardstick::metric_set(yardstick::rmse, yardstick::rsq))
+          shiny::incProgress(0.9, detail = "Completado")
+        })
 
         showNotification("Tuning completado.", type = "message", duration = 3)
         res
@@ -1180,22 +1186,87 @@ mod_rf_reg_server <- function(id) {
     })
 
     output$resumen_modelo <- renderUI({
-      req(modelo_ajustado())
-      m <- tune::collect_metrics(modelo_ajustado())
+      req(modelo_ajustado(), ajuste_train())
+      m    <- tune::collect_metrics(modelo_ajustado())
+      at   <- ajuste_train()
+      rmse_train <- round(sqrt(mean((at$y - at$fitted)^2)), 3)
+      rsq_train  <- round(1 - sum((at$y - at$fitted)^2) / sum((at$y - mean(at$y))^2), 3)
+      rmse_test  <- round(m$.estimate[m$.metric == "rmse"], 3)
+      rsq_test   <- round(m$.estimate[m$.metric == "rsq"],  3)
+
       tagList(
-        h5("Métricas en datos de prueba"),
         fluidRow(
-          column(4, div(class = "metrica-card",
-            div(class = "metrica-valor",
-                round(m$.estimate[m$.metric == "rmse"], 3)),
-            div(class = "metrica-label", "RMSE (test)"))),
-          column(4, div(class = "metrica-card",
-            div(class = "metrica-valor",
-                round(m$.estimate[m$.metric == "rsq"], 3)),
-            div(class = "metrica-label", "R² (test)"))),
-          column(4, div(class = "metrica-card",
-            div(class = "metrica-valor", length(input$predictores)),
-            div(class = "metrica-label", "Predictores")))
+          column(6,
+            h6(style = "color:#1170AA; font-weight:700;",
+               bsicons::bs_icon("circle-fill", class = "me-1"), "Entrenamiento (optimista)"),
+            fluidRow(
+              column(6, div(class = "metrica-card",
+                div(class = "metrica-valor", style = "color:#1170AA;", rmse_train),
+                div(class = "metrica-label", "RMSE"))),
+              column(6, div(class = "metrica-card",
+                div(class = "metrica-valor", style = "color:#1170AA;", rsq_train),
+                div(class = "metrica-label", "R²")))
+            )
+          ),
+          column(6,
+            h6(style = "color:#C85200; font-weight:700;",
+               bsicons::bs_icon("circle-fill", class = "me-1"), "Prueba (real)"),
+            fluidRow(
+              column(6, div(class = "metrica-card",
+                div(class = "metrica-valor", style = "color:#C85200;", rmse_test),
+                div(class = "metrica-label", "RMSE"))),
+              column(6, div(class = "metrica-card",
+                div(class = "metrica-valor", style = "color:#C85200;", rsq_test),
+                div(class = "metrica-label", "R²")))
+            )
+          )
+        ),
+        br(),
+        {
+          dif <- abs(rsq_train - rsq_test)
+          if (dif < 0.05)
+            div(class = "alert alert-success small py-2",
+              bsicons::bs_icon("check-circle", class = "me-1"),
+              strong("El modelo generaliza muy bien"),
+              " — R² entrenamiento: ", strong(rsq_train),
+              ", R² prueba: ", strong(rsq_test),
+              ", diferencia: ", strong(round(dif, 3)),
+              ". Una diferencia menor a 0.05 indica excelente generalización.")
+          else if (dif < 0.10)
+            div(class = "alert alert-info small py-2",
+              bsicons::bs_icon("info-circle", class = "me-1"),
+              strong("Generalización aceptable"),
+              " — R² entrenamiento: ", strong(rsq_train),
+              ", R² prueba: ", strong(rsq_test),
+              ", diferencia: ", strong(round(dif, 3)),
+              ". Una diferencia entre 0.05 y 0.10 es pequeña y aceptable.")
+          else
+            div(class = "alert alert-warning small py-2",
+              bsicons::bs_icon("exclamation-triangle", class = "me-1"),
+              strong("Posible overfitting"),
+              " — R² entrenamiento: ", strong(rsq_train),
+              ", R² prueba: ", strong(rsq_test),
+              ", diferencia: ", strong(round(dif, 3)),
+              ". Una diferencia mayor a 0.10 sugiere memorización del entrenamiento.")
+        },
+        br(),
+        div(class = "card",
+          div(class = "card-header", "Criterios de interpretación (diferencia R² train − test)"),
+          div(class = "card-body",
+            tags$table(class = "table table-sm small mb-0",
+              tags$tbody(
+                tags$tr(
+                  tags$td(bsicons::bs_icon("check-circle-fill", style = paste0("color:", colores$primario))),
+                  tags$td(strong("< 0.05")), tags$td("El modelo generaliza muy bien")),
+                tags$tr(
+                  tags$td(bsicons::bs_icon("info-circle-fill", style = "color:#0d6efd")),
+                  tags$td(strong("0.05 – 0.10")), tags$td("Generalización aceptable — diferencia pequeña")),
+                tags$tr(
+                  tags$td(bsicons::bs_icon("exclamation-triangle-fill", style = paste0("color:", colores$advertencia))),
+                  tags$td(strong("> 0.10")), tags$td("Posible overfitting — considera reducir la complejidad"))
+              )
+            )
+          )
         )
       )
     })

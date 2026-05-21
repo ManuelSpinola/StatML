@@ -487,17 +487,20 @@ mod_glm_ml_ui <- function(id) {
                bsicons::bs_icon("diagram-2", class = "me-2"), "Hold-out (Train / Test)"),
             p(class = "small text-muted mb-0",
               "Comparar métricas en train y test permite detectar overfitting.
-               Valores muy superiores en train indican que el modelo memoriza en lugar de generalizar.")
+               Valores muy superiores en train indican que el modelo memoriza en lugar de generalizar."),
+            br(),
+            div(class = "alert alert-info small py-2 mb-0",
+              bsicons::bs_icon("info-circle", class = "me-1"),
+              strong("AUC-ROC"), " es independiente del umbral de clasificación —
+               evalúa el ranking de probabilidades para todos los umbrales posibles.",
+              br(),
+              strong("Accuracy, Sensibilidad, Especificidad, F1 y Kappa"),
+              " dependen del umbral — se calculan con el umbral seleccionado en la sección de abajo.")
           ),
           fluidRow(
             column(4, uiOutput(ns("card_auc_train"))),
             column(4, uiOutput(ns("card_auc_test"))),
             column(4, uiOutput(ns("semaforo_performance")))
-          ),
-          br(),
-          fluidRow(
-            column(4, uiOutput(ns("card_acc_train"))),
-            column(4, uiOutput(ns("card_acc_test")))
           ),
 
           hr(),
@@ -505,7 +508,20 @@ mod_glm_ml_ui <- function(id) {
           # ── Matriz de confusión + métricas extendidas ──
           div(style = "border-left: 4px solid #5FA2CE; padding-left: 1rem; margin-bottom: 1.5rem;",
             h4(style = "color: #5FA2CE; font-weight: 700; margin-bottom: 0.2rem;",
-               bsicons::bs_icon("grid-3x3", class = "me-2"), "Matriz de confusión y métricas")
+               bsicons::bs_icon("grid-3x3", class = "me-2"), "Matriz de confusión y métricas"),
+            p(class = "small text-muted mb-0",
+              "Todas las métricas de esta sección se calculan con el umbral seleccionado
+               en la pestaña 'Ajustar modelo'. Cambia el umbral y el modelo se recalcula.")
+          ),
+          fluidRow(
+            column(4,
+              div(class = "card mb-3",
+                div(class = "card-header", "Umbral activo"),
+                div(class = "card-body text-center",
+                  uiOutput(ns("umbral_activo"))
+                )
+              )
+            )
           ),
           fluidRow(
             column(5, uiOutput(ns("matriz_confusion"))),
@@ -750,7 +766,8 @@ mod_glm_ml_server <- function(id) {
     output$tabla_vista_previa <- DT::renderDT({
       req(datos_raw())
       DT::datatable(datos_raw(),
-        options = list(scrollX = TRUE, pageLength = 10, dom = "tip"),
+        options = list(scrollX = TRUE, pageLength = 10, dom = "tip",
+                       scrollY = "350px", scrollCollapse = TRUE),
         rownames = FALSE)
     })
 
@@ -1064,27 +1081,95 @@ mod_glm_ml_server <- function(id) {
     })
 
     output$resumen_modelo <- renderUI({
-      req(modelo_ajustado())
-      m <- tune::collect_metrics(modelo_ajustado())
+      req(modelo_ajustado(), metricas_train_clas())
+      m    <- tune::collect_metrics(modelo_ajustado())
+      mt   <- metricas_train_clas()
+      auc_test <- round(m$.estimate[m$.metric == "roc_auc"], 3)
+      acc_test <- round(m$.estimate[m$.metric == "accuracy"], 3)
+
       tagList(
-        h5("Métricas en datos de prueba"),
         fluidRow(
-          column(3, div(class = "metrica-card",
-            div(class = "metrica-valor",
-                round(m$.estimate[m$.metric == "roc_auc"], 3)),
-            div(class = "metrica-label", "AUC"))),
-          column(3, div(class = "metrica-card",
-            div(class = "metrica-valor",
-                round(m$.estimate[m$.metric == "accuracy"], 3)),
-            div(class = "metrica-label", "Accuracy"))),
-          column(3, div(class = "metrica-card",
-            div(class = "metrica-valor",
-                round(m$.estimate[m$.metric == "sensitivity"], 3)),
-            div(class = "metrica-label", "Sensibilidad"))),
-          column(3, div(class = "metrica-card",
-            div(class = "metrica-valor",
-                round(m$.estimate[m$.metric == "specificity"], 3)),
-            div(class = "metrica-label", "Especificidad")))
+          column(6,
+            h6(style = "color:#1170AA; font-weight:700;",
+               bsicons::bs_icon("circle-fill", class = "me-1"), "Entrenamiento (optimista)"),
+            fluidRow(
+              column(6, div(class = "metrica-card",
+                div(class = "metrica-valor", style = "color:#1170AA;", mt$auc),
+                div(class = "metrica-label", "AUC"))),
+              column(6, div(class = "metrica-card",
+                div(class = "metrica-valor", style = "color:#1170AA;", mt$acc),
+                div(class = "metrica-label", "Accuracy")))
+            )
+          ),
+          column(6,
+            h6(style = "color:#C85200; font-weight:700;",
+               bsicons::bs_icon("circle-fill", class = "me-1"), "Prueba (real)"),
+            fluidRow(
+              column(6, div(class = "metrica-card",
+                div(class = "metrica-valor", style = "color:#C85200;", auc_test),
+                div(class = "metrica-label", "AUC"))),
+              column(6, div(class = "metrica-card",
+                div(class = "metrica-valor", style = "color:#C85200;", acc_test),
+                div(class = "metrica-label", "Accuracy")))
+            )
+          )
+        ),
+        br(),
+        {
+          dif <- abs(mt$auc - auc_test)
+          if (dif < 0.05)
+            div(class = "alert alert-success small py-2",
+              bsicons::bs_icon("check-circle", class = "me-1"),
+              strong("El modelo generaliza muy bien"),
+              " — AUC entrenamiento: ", strong(mt$auc),
+              ", AUC prueba: ", strong(auc_test),
+              ", diferencia: ", strong(round(dif, 3)),
+              ". Una diferencia menor a 0.05 indica excelente generalización.")
+          else if (dif < 0.10)
+            div(class = "alert alert-info small py-2",
+              bsicons::bs_icon("info-circle", class = "me-1"),
+              strong("Generalización aceptable"),
+              " — AUC entrenamiento: ", strong(mt$auc),
+              ", AUC prueba: ", strong(auc_test),
+              ", diferencia: ", strong(round(dif, 3)),
+              ". Una diferencia entre 0.05 y 0.10 es pequeña y aceptable.")
+          else
+            div(class = "alert alert-warning small py-2",
+              bsicons::bs_icon("exclamation-triangle", class = "me-1"),
+              strong("Posible overfitting"),
+              " — AUC entrenamiento: ", strong(mt$auc),
+              ", AUC prueba: ", strong(auc_test),
+              ", diferencia: ", strong(round(dif, 3)),
+              ". Una diferencia mayor a 0.10 sugiere que el modelo memoriza
+               el entrenamiento. Considera reducir la complejidad.")
+        },
+        br(),
+        div(class = "card",
+          div(class = "card-header", "Criterios de interpretación (diferencia AUC train − test)"),
+          div(class = "card-body",
+            tags$table(class = "table table-sm small mb-0",
+              tags$tbody(
+                tags$tr(
+                  tags$td(bsicons::bs_icon("check-circle-fill",
+                          style = paste0("color:", colores$primario))),
+                  tags$td(strong("< 0.05")),
+                  tags$td("El modelo generaliza muy bien")
+                ),
+                tags$tr(
+                  tags$td(bsicons::bs_icon("info-circle-fill",
+                          style = "color:#0d6efd")),
+                  tags$td(strong("0.05 – 0.10")),
+                  tags$td("Generalización aceptable — diferencia pequeña")
+                ),
+                tags$tr(
+                  tags$td(bsicons::bs_icon("exclamation-triangle-fill",
+                          style = paste0("color:", colores$advertencia))),
+                  tags$td(strong("> 0.10")),
+                  tags$td("Posible overfitting — considera reducir la complejidad")
+                )
+              )
+            )
+          )
         )
       )
     })
@@ -1237,6 +1322,19 @@ mod_glm_ml_server <- function(id) {
       metrica_card_clas(v, "Accuracy — Prueba", "Clasificaciones correctas en test (real)", "#C85200")
     })
 
+    output$umbral_activo <- renderUI({
+      req(input$umbral)
+      div(
+        div(style = "font-size:2.2rem; font-weight:800; color:#5FA2CE; line-height:1;",
+            input$umbral),
+        div(style = "font-size:0.78rem; color:#57606C; margin-top:0.3rem;",
+            "P(Y=1) ≥ umbral → clase positiva"),
+        br(),
+        p(class = "small text-muted mb-0",
+          "Mueve el slider en 'Ajustar modelo' para recalcular las métricas.")
+      )
+    })
+
     output$semaforo_performance <- renderUI({
       req(modelo_ajustado())
       m    <- tune::collect_metrics(modelo_ajustado())
@@ -1297,15 +1395,30 @@ mod_glm_ml_server <- function(id) {
           )
         )
 
+        # Umbral de "bueno" varía por métrica
+        # Sens/Spec/VPP/VPN/F1: 0.5=pobre, 0.7=bueno
+        # Kappa: 0.2=leve, 0.4=moderado, 0.6=bueno
+        umbrales_color <- c(0.7, 0.7, 0.7, 0.7, 0.7, 0.6)
+        metricas_df$Interpretación <- ifelse(
+          c(sens, spec, ppv, npv, f1, kap) >= umbrales_color, "✓ Bueno",
+          ifelse(c(sens, spec, ppv, npv, f1, kap) >= c(0.5, 0.5, 0.5, 0.5, 0.5, 0.4),
+                 "~ Moderado", "✗ Débil")
+        )
+
         tagList(
           h6(paste0("Métricas extendidas (umbral = ", input$umbral, ")")),
           DT::renderDT(
             DT::datatable(metricas_df,
               options = list(dom = "t", pageLength = 10),
               rownames = FALSE) |>
-              DT::formatStyle("Valor",
-                color = DT::styleInterval(c(0.5, 0.7),
-                  c(colores$peligro, colores$advertencia, colores$primario)))
+              DT::formatStyle("Interpretación",
+                backgroundColor = DT::styleEqual(
+                  c("✓ Bueno", "~ Moderado", "✗ Débil"),
+                  c("#e8f5e9", "#fff8e1", "#ffebee")),
+                color = DT::styleEqual(
+                  c("✓ Bueno", "~ Moderado", "✗ Débil"),
+                  c(colores$primario, "#9e6c00", colores$peligro)),
+                fontWeight = "bold")
           )
         )
       }, error = function(e)
@@ -1321,13 +1434,21 @@ mod_glm_ml_server <- function(id) {
         chi2  <- round(hl$chisq, 3)
         interp <- if (p_val > 0.05)
           div(class = "alert alert-success small py-2",
-            bsicons::bs_icon("check-circle"), " p > 0.05: no se rechaza buen ajuste (calibración aceptable)")
+            bsicons::bs_icon("check-circle"), " ",
+            strong("El modelo tiene buen ajuste"), " — las probabilidades predichas
+             son consistentes con las frecuencias observadas.")
         else
           div(class = "alert alert-warning small py-2",
-            bsicons::bs_icon("exclamation-triangle"), " p ≤ 0.05: posible mal ajuste en algunos rangos de probabilidad")
+            bsicons::bs_icon("exclamation-triangle"), " ",
+            strong("El modelo no tiene buen ajuste"), " — las probabilidades predichas
+             difieren de las frecuencias observadas en algunos rangos de probabilidad.")
 
         div(
           h6("Prueba de Hosmer-Lemeshow"),
+          p(class = "small text-muted",
+            "Compara las probabilidades predichas agrupadas en 10 grupos (deciles)
+             contra las proporciones observadas en esos grupos.
+             H₀: el modelo calibra bien."),
           div(class = "card",
             div(class = "card-body",
               fluidRow(
