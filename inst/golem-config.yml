@@ -1,0 +1,7 @@
+default:
+  golem_name: StatML
+  golem_version: 0.0.1
+  app_prod: false
+
+production:
+  app_prod: true
