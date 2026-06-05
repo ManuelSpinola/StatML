@@ -19,6 +19,7 @@ Imports:
     ggplot2,
     glmnet,
     golem (>= 0.5.1),
+    pkgload,
     plotly,
     pROC,
     ranger,
