@@ -669,7 +669,6 @@ mod_xgb_clas_server <- function(id) {
       vars_str <- paste0('c("', paste(input$x_pre, collapse = '", "'), '")')
       glue::glue('
 library(tidymodels)
-library(xgboost)
 library(vip)
 
 # Datos
