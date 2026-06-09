@@ -6,6 +6,8 @@ app_server <- function(input, output, session) {
   mod_lm_ml_server("lm_ml")
   mod_glm_ml_server("glm_ml")
   mod_rf_reg_server("rf_reg")
+  mod_xgb_reg_server("xgb_reg")
   mod_rf_clas_server("rf_clas")
+  mod_xgb_clas_server("xgb_clas")
   mod_acerca_de_server("acerca_de")
 }

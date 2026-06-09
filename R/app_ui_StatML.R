@@ -41,6 +41,12 @@ app_ui <- function() {
         title = "Random Forest",
         icon  = bsicons::bs_icon("tree"),
         mod_rf_reg_ui("rf_reg")
+      ),
+
+      bslib::nav_panel(
+        title = "XGBoost",
+        icon  = bsicons::bs_icon("lightning-charge"),
+        mod_xgb_reg_ui("xgb_reg")
       )
     ),
 
@@ -59,6 +65,12 @@ app_ui <- function() {
         title = "Random Forest",
         icon  = bsicons::bs_icon("tree-fill"),
         mod_rf_clas_ui("rf_clas")
+      ),
+
+      bslib::nav_panel(
+        title = "XGBoost",
+        icon  = bsicons::bs_icon("lightning-charge-fill"),
+        mod_xgb_clas_ui("xgb_clas")
       )
     ),
 

@@ -7,5 +7,6 @@
 #' @import bsicons
 #' @import ggplot2
 #' @import dplyr
+#' @import xgboost
 #' @importFrom golem add_resource_path activate_js favicon bundle_resources
 NULL
