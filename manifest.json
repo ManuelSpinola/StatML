@@ -495,35 +495,18 @@
       "Repository": null,
       "description": {
         "Package": "StatML",
-        "Title": "Interactive Machine Learning Platform for Ecology and Data\nScience",
+        "Title": "Interactive Machine Learning Platform for Ecology and Data Science",
         "Version": "0.0.1",
         "Authors@R": "\n    person(\"Manuel\", \"Spínola\", , \"manuel.spinola@una.cr\", role = c(\"aut\", \"cre\"))",
         "Description": "An interactive Shiny application for machine learning, part of the \n    StatSuite ecosystem. Covers regression and classification using linear models, \n    generalized linear models, and random forests with tidymodels. Designed for \n    teaching and research in ecology, biodiversity sciences, and data science.",
         "License": "MIT + file LICENSE",
         "URL": "https://github.com/ManuelSpinola/StatML",
         "BugReports": "https://github.com/ManuelSpinola/StatML/issues",
-        "Imports": "bsicons, bslib, config (>= 0.3.2), dplyr, DT, ggplot2, glmnet,\ngolem (>= 0.5.1), pkgload, plotly, pROC, ranger, readr, readxl,\nrecipes, rsample, shiny (>= 1.9.1), tidymodels, tune, vip,\nperformance, workflows, yardstick",
+        "Imports": "bsicons,\nbslib,\nconfig (>= 0.3.2),\ndplyr,\nDT,\nggplot2,\nglmnet,\ngolem (>= 0.5.1),\npkgload,\nplotly,\npROC,\ndials,\nglue,\nparsnip,\npurrr,\nranger,\nreadr,\nreadxl,\nrecipes,\nrlang,\nrsample,\nscales,\nshiny (>= 1.9.1),\ntibble,\ntidymodels,\ntune,\nvip,\nperformance,\nworkflows,\nxgboost,\nyardstick",
         "Encoding": "UTF-8",
         "Language": "es",
         "Roxygen": "list(markdown = TRUE)",
-        "Config/roxygen2/version": "8.0.0",
-        "RemoteType": "github",
-        "RemoteHost": "api.github.com",
-        "RemoteRepo": "StatMl",
-        "RemoteUsername": "ManuelSpinola",
-        "RemotePkgRef": "ManuelSpinola/StatMl",
-        "RemoteRef": "HEAD",
-        "RemoteSha": "ccea43266dcba1170550b6a19bcd7355efe424ac",
-        "GithubRepo": "StatMl",
-        "GithubUsername": "ManuelSpinola",
-        "GithubRef": "HEAD",
-        "GithubSHA1": "ccea43266dcba1170550b6a19bcd7355efe424ac",
-        "NeedsCompilation": "no",
-        "Packaged": "2026-06-08 16:42:38 UTC; manuel_nuevo",
-        "Author": "Manuel Spínola [aut, cre]",
-        "Maintainer": "Manuel Spínola <manuel.spinola@una.cr>",
-        "Depends": "R (>= 4.1.0)",
-        "Built": "R 4.6.0; ; 2026-06-08 16:42:38 UTC; unix"
+        "Config/roxygen2/version": "8.0.0"
       }
     },
     "askpass": {
@@ -1362,14 +1345,14 @@
         "Packaged": "2026-05-05 05:46:53 UTC; a00932230",
         "Author": "Tyson Barrett [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-2137-1391>),\n  Matt Dowle [aut],\n  Arun Srinivasan [aut],\n  Jan Gorecki [aut],\n  Michael Chirico [aut] (ORCID: <https://orcid.org/0000-0003-0787-087X>),\n  Toby Hocking [aut] (ORCID: <https://orcid.org/0000-0002-3146-0865>),\n  Benjamin Schwendinger [aut] (ORCID:\n    <https://orcid.org/0000-0003-3315-8114>),\n  Ivan Krylov [aut] (ORCID: <https://orcid.org/0000-0002-0172-3812>),\n  Pasha Stetsenko [ctb],\n  Tom Short [ctb],\n  Steve Lianoglou [ctb],\n  Eduard Antonyan [ctb],\n  Markus Bonsch [ctb],\n  Hugh Parsonage [ctb],\n  Scott Ritchie [ctb],\n  Kun Ren [ctb],\n  Xianying Tan [ctb],\n  Rick Saporta [ctb],\n  Otto Seiskari [ctb],\n  Xianghui Dong [ctb],\n  Michel Lang [ctb],\n  Watal Iwasaki [ctb],\n  Seth Wenchel [ctb],\n  Karl Broman [ctb],\n  Tobias Schmidt [ctb],\n  David Arenburg [ctb],\n  Ethan Smith [ctb],\n  Francois Cocquemas [ctb],\n  Matthieu Gomez [ctb],\n  Philippe Chataignon [ctb],\n  Nello Blaser [ctb],\n  Dmitry Selivanov [ctb],\n  Andrey Riabushenko [ctb],\n  Cheng Lee [ctb],\n  Declan Groves [ctb],\n  Daniel Possenriede [ctb],\n  Felipe Parages [ctb],\n  Denes Toth [ctb],\n  Mus Yaramaz-David [ctb],\n  Ayappan Perumal [ctb],\n  James Sams [ctb],\n  Martin Morgan [ctb],\n  Michael Quinn [ctb],\n  @javrucebo [ctb] (GitHub user),\n  Marc Halperin [ctb],\n  Roy Storey [ctb],\n  Manish Saraswat [ctb],\n  Morgan Jacob [ctb],\n  Michael Schubmehl [ctb],\n  Davis Vaughan [ctb],\n  Leonardo Silvestri [ctb],\n  Jim Hester [ctb],\n  Anthony Damico [ctb],\n  Sebastian Freundt [ctb],\n  David Simons [ctb],\n  Elliott Sales de Andrade [ctb],\n  Cole Miller [ctb],\n  Jens Peder Meldgaard [ctb],\n  Vaclav Tlapak [ctb],\n  Kevin Ushey [ctb],\n  Dirk Eddelbuettel [ctb],\n  Tony Fischetti [ctb],\n  Ofek Shilon [ctb],\n  Vadim Khotilovich [ctb],\n  Hadley Wickham [ctb],\n  Bennet Becker [ctb],\n  Kyle Haynes [ctb],\n  Boniface Christian Kamgang [ctb],\n  Olivier Delmarcell [ctb],\n  Josh O'Brien [ctb],\n  Dereck de Mezquita [ctb],\n  Michael Czekanski [ctb],\n  Dmitry Shemetov [ctb],\n  Nitish Jha [ctb],\n  Joshua Wu [ctb],\n  Iago Giné-Vázquez [ctb],\n  Anirban Chetia [ctb],\n  Doris Amoakohene [ctb],\n  Angel Feliz [ctb],\n  Michael Young [ctb],\n  Mark Seeto [ctb],\n  Philippe Grosjean [ctb],\n  Vincent Runge [ctb],\n  Christian Wia [ctb],\n  Elise Maigné [ctb],\n  Vincent Rocher [ctb],\n  Vijay Lulla [ctb],\n  Aljaž Sluga [ctb],\n  Bill Evans [ctb],\n  Reino Bruner [ctb],\n  @badasahog [ctb] (GitHub user),\n  Vinit Thakur [ctb],\n  Mukul Kumar [ctb],\n  Ildikó Czeller [ctb],\n  Manmita Das [ctb],\n  Tarun Thammisetty [ctb]",
         "Maintainer": "Tyson Barrett <t.barrett88@gmail.com>",
-        "Repository": "RSPM",
+        "Repository": "CRAN",
         "Date/Publication": "2026-05-06 05:10:20 UTC",
-        "Built": "R 4.6.0; aarch64-apple-darwin20; 2026-05-07 06:58:35 UTC; unix",
+        "Built": "R 4.6.0; aarch64-apple-darwin23; 2026-05-06 07:00:46 UTC; unix",
+        "Archs": "data_table.so.dSYM",
         "RemoteType": "standard",
-        "RemoteRef": "data.table",
         "RemotePkgRef": "data.table",
+        "RemoteRef": "data.table",
         "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
-        "RemoteReposName": "CRAN",
         "RemotePkgPlatform": "aarch64-apple-darwin23",
         "RemoteSha": "1.18.4"
       }
@@ -4165,14 +4148,14 @@
         "Packaged": "2026-05-16 14:11:44 UTC; jenny",
         "Author": "Hadley Wickham [aut] (ORCID: <https://orcid.org/0000-0003-4757-117X>),\n  Jennifer Bryan [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-6983-2759>),\n  Posit, PBC [cph, fnd] (Copyright holder of all R code and all C/C++\n    code without explicit copyright attribution),\n  Marcin Kalicinski [ctb, cph] (Author of included RapidXML code),\n  Komarov Valery [ctb, cph] (Author of included libxls code),\n  Christophe Leitienne [ctb, cph] (Author of included libxls code),\n  Bob Colbert [ctb, cph] (Author of included libxls code),\n  David Hoerl [ctb, cph] (Author of included libxls code),\n  Evan Miller [ctb, cph] (Author of included libxls code)",
         "Maintainer": "Jennifer Bryan <jenny@posit.co>",
-        "Repository": "RSPM",
+        "Repository": "CRAN",
         "Date/Publication": "2026-05-16 21:50:23 UTC",
-        "Built": "R 4.6.0; aarch64-apple-darwin20; 2026-05-17 05:18:26 UTC; unix",
+        "Built": "R 4.6.0; aarch64-apple-darwin23; 2026-05-17 02:16:09 UTC; unix",
+        "Archs": "readxl.so.dSYM",
         "RemoteType": "standard",
-        "RemoteRef": "readxl",
         "RemotePkgRef": "readxl",
+        "RemoteRef": "readxl",
         "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
-        "RemoteReposName": "CRAN",
         "RemotePkgPlatform": "aarch64-apple-darwin23",
         "RemoteSha": "1.5.0"
       }
@@ -5671,6 +5654,43 @@
         "RemoteSha": "0.58"
       }
     },
+    "xgboost": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "xgboost",
+        "Type": "Package",
+        "Title": "Extreme Gradient Boosting",
+        "Version": "3.2.1.1",
+        "Date": "2026-03-18",
+        "Authors@R": "c(\n  person(\"Tianqi\", \"Chen\", role = c(\"aut\"),\n         email = \"tianqi.tchen@gmail.com\"),\n  person(\"Tong\", \"He\", role = c(\"aut\"),\n         email = \"hetong007@gmail.com\"),\n  person(\"Michael\", \"Benesty\", role = c(\"aut\"),\n         email = \"michael@benesty.fr\"),\n  person(\"Vadim\", \"Khotilovich\", role = c(\"aut\"),\n         email = \"khotilovich@gmail.com\"),\n  person(\"Yuan\", \"Tang\", role = c(\"aut\"),\n         email = \"terrytangyuan@gmail.com\",\n         comment = c(ORCID = \"0000-0001-5243-233X\")),\n  person(\"Hyunsu\", \"Cho\", role = c(\"aut\"),\n         email = \"chohyu01@cs.washington.edu\"),\n  person(\"Kailong\", \"Chen\", role = c(\"aut\")),\n  person(\"Rory\", \"Mitchell\", role = c(\"aut\")),\n  person(\"Ignacio\", \"Cano\", role = c(\"aut\")),\n  person(\"Tianyi\", \"Zhou\", role = c(\"aut\")),\n  person(\"Mu\", \"Li\", role = c(\"aut\")),\n  person(\"Junyuan\", \"Xie\", role = c(\"aut\")),\n  person(\"Min\", \"Lin\", role = c(\"aut\")),\n  person(\"Yifeng\", \"Geng\", role = c(\"aut\")),\n  person(\"Yutian\", \"Li\", role = c(\"aut\")),\n  person(\"Jiaming\", \"Yuan\", role = c(\"aut\", \"cre\"),\n         email = \"jm.yuan@outlook.com\"),\n  person(\"David\", \"Cortes\", role = c(\"aut\")),\n  person(\"XGBoost contributors\", role = c(\"cph\"),\n         comment = \"base XGBoost implementation\")\n  )",
+        "Maintainer": "Jiaming Yuan <jm.yuan@outlook.com>",
+        "Description": "Extreme Gradient Boosting, which is an efficient implementation\n    of the gradient boosting framework from Chen & Guestrin (2016) <doi:10.1145/2939672.2939785>.\n    This package is its R interface. The package includes efficient linear\n    model solver and tree learning algorithms. The package can automatically\n    do parallel computation on a single machine which could be more than 10\n    times faster than existing gradient boosting packages. It supports\n    various objective functions, including regression, classification and ranking.\n    The package is made to be extensible, so that users are also allowed to define\n    their own objectives easily.",
+        "License": "Apache License (== 2.0) | file LICENSE",
+        "URL": "https://github.com/dmlc/xgboost",
+        "BugReports": "https://github.com/dmlc/xgboost/issues",
+        "NeedsCompilation": "yes",
+        "VignetteBuilder": "knitr",
+        "Suggests": "knitr, rmarkdown, ggplot2 (>= 1.0.1), DiagrammeR (>= 0.9.0),\nDiagrammeRsvg, rsvg, htmlwidgets, Ckmeans.1d.dp (>= 3.3.1), vcd\n(>= 1.3), testthat, igraph (>= 1.0.1), float, titanic,\nRhpcBLASctl, survival",
+        "Depends": "R (>= 4.3.0)",
+        "Imports": "Matrix (>= 1.1-0), methods, data.table (>= 1.9.6), jsonlite\n(>= 1.0)",
+        "RoxygenNote": "7.3.3",
+        "Encoding": "UTF-8",
+        "SystemRequirements": "GNU make, C++17",
+        "Packaged": "2026-03-17 18:34:16 UTC; jiamingy",
+        "Author": "Tianqi Chen [aut],\n  Tong He [aut],\n  Michael Benesty [aut],\n  Vadim Khotilovich [aut],\n  Yuan Tang [aut] (ORCID: <https://orcid.org/0000-0001-5243-233X>),\n  Hyunsu Cho [aut],\n  Kailong Chen [aut],\n  Rory Mitchell [aut],\n  Ignacio Cano [aut],\n  Tianyi Zhou [aut],\n  Mu Li [aut],\n  Junyuan Xie [aut],\n  Min Lin [aut],\n  Yifeng Geng [aut],\n  Yutian Li [aut],\n  Jiaming Yuan [aut, cre],\n  David Cortes [aut],\n  XGBoost contributors [cph] (base XGBoost implementation)",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-03-18 06:10:03 UTC",
+        "Built": "R 4.6.0; aarch64-apple-darwin23; 2026-04-25 23:26:23 UTC; unix",
+        "Archs": "xgboost.so.dSYM",
+        "RemoteType": "standard",
+        "RemotePkgRef": "xgboost",
+        "RemoteRef": "xgboost",
+        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
+        "RemotePkgPlatform": "aarch64-apple-darwin23",
+        "RemoteSha": "3.2.1.1"
+      }
+    },
     "xtable": {
       "Source": "CRAN",
       "Repository": "https://packagemanager.posit.co/cran/latest",
@@ -5780,13 +5800,13 @@
       "checksum": "f882cbaf1dc436e1c44fae59820131ae"
     },
     ".Rprofile": {
-      "checksum": "8e08ef886f9ee5c07205d0cc6912e9ff"
+      "checksum": "f47a850ffd12c1224d306c11aeb08b64"
     },
     "app.R": {
       "checksum": "f6a3c802e5766a70574dfef0219dd76a"
     },
-    "DESCRIPTION.bak": {
-      "checksum": "d86c4eb0079db371670077c2d3881d92"
+    "dev/run_dev.R": {
+      "checksum": "7fd3203c9ff5d206859c974bfdfa8ffc"
     },
     "inst/app/data/aves_conteo_paisaje.rda": {
       "checksum": "905262e86081e5a2ff3423fd119555f2"
@@ -5821,8 +5841,17 @@
     "inst/golem-config.yml": {
       "checksum": "0c718bfa13b2cf85ccc08b5abbfaab53"
     },
+    "LICENSE": {
+      "checksum": "6d381582c20b7b8b480f0902f32f016a"
+    },
+    "man/run_app.Rd": {
+      "checksum": "480f78846e497dd8b7e6554a711dbbb8"
+    },
+    "man/StatML-package.Rd": {
+      "checksum": "4a952710cab9d7be8e77212bba48bae0"
+    },
     "NAMESPACE": {
-      "checksum": "b3894021baf8055526b6e1e06c71b612"
+      "checksum": "05a16bdfd2c7cb5fbe6d6b039ec5e1d3"
     },
     "R/_disable_autoload.R": {
       "checksum": "6bc5f6c72d99d0e46117f6d84cec7797"
@@ -5831,10 +5860,10 @@
       "checksum": "10664ea9a45bd2cd617dbdcedc88f35f"
     },
     "R/app_server_StatML.R": {
-      "checksum": "a9dbfdcee7044cf904252181bb5693e5"
+      "checksum": "839ec31a916615f193a789353bb7a12e"
     },
     "R/app_ui_StatML.R": {
-      "checksum": "9e4ce6644f9fa34fc72260701d6e7e26"
+      "checksum": "79d74864f35cc0b204d8685f37fa6288"
     },
     "R/golem_utils.R": {
       "checksum": "37cff64de8d5f2d2b597e269598acd23"
@@ -5843,7 +5872,7 @@
       "checksum": "995b8cd6696528bb6d90d48b0c3ff87f"
     },
     "R/imports.R": {
-      "checksum": "2dc96d9b06fe628923c8c9d831011fe2"
+      "checksum": "97b17486d238cabe950bdec8f3d17e55"
     },
     "R/mod_acerca_de.R": {
       "checksum": "a389b7fb109c1aeb5bf482dcd2b22ea6"
@@ -5860,14 +5889,23 @@
     "R/mod_rf_reg.R": {
       "checksum": "8cafc2edfaafe8bb9962786035f6f839"
     },
+    "R/mod_xgb_clas.R": {
+      "checksum": "7a420040eec83d101fb05f8837392688"
+    },
+    "R/mod_xgb_reg.R": {
+      "checksum": "023492037b39f4db2a42996250f90531"
+    },
     "R/run_app.R": {
       "checksum": "dcea8ec391d2d937ecc0c97dfd638db9"
     },
     "R/StatML-package.R": {
       "checksum": "d1e9ec53897682b0e59e465f9b579a18"
     },
+    "README.md": {
+      "checksum": "12bf789e041c1225c31680c3e7f4b4b7"
+    },
     "renv.lock": {
-      "checksum": "66ad390e281523a0b5ae97d07a963692"
+      "checksum": "6b8dafe6c37f38c31fb94127613e1b79"
     }
   },
   "users": null
