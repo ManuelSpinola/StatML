@@ -495,18 +495,35 @@
       "Repository": null,
       "description": {
         "Package": "StatML",
-        "Title": "Interactive Machine Learning Platform for Ecology and Data Science",
+        "Title": "Interactive Machine Learning Platform for Ecology and Data\nScience",
         "Version": "0.0.1",
         "Authors@R": "\n    person(\"Manuel\", \"Spínola\", , \"manuel.spinola@una.cr\", role = c(\"aut\", \"cre\"))",
         "Description": "An interactive Shiny application for machine learning, part of the \n    StatSuite ecosystem. Covers regression and classification using linear models, \n    generalized linear models, and random forests with tidymodels. Designed for \n    teaching and research in ecology, biodiversity sciences, and data science.",
         "License": "MIT + file LICENSE",
         "URL": "https://github.com/ManuelSpinola/StatML",
         "BugReports": "https://github.com/ManuelSpinola/StatML/issues",
-        "Imports": "bsicons,\nbslib,\nconfig (>= 0.3.2),\ndplyr,\nDT,\nggplot2,\nglmnet,\ngolem (>= 0.5.1),\npkgload,\nplotly,\npROC,\ndials,\nglue,\nparsnip,\npurrr,\nranger,\nreadr,\nreadxl,\nrecipes,\nrlang,\nrsample,\nscales,\nshiny (>= 1.9.1),\ntibble,\ntidymodels,\ntune,\nvip,\nperformance,\nworkflows,\nxgboost,\nyardstick",
+        "Imports": "bsicons, bslib, config (>= 0.3.2), dplyr, DT, ggplot2, glmnet,\ngolem (>= 0.5.1), pkgload, plotly, pROC, dials, glue, parsnip,\npurrr, ranger, readr, readxl, recipes, rlang, rsample, scales,\nshiny (>= 1.9.1), tibble, tidymodels, tune, vip, performance,\nworkflows, xgboost, yardstick",
         "Encoding": "UTF-8",
         "Language": "es",
         "Roxygen": "list(markdown = TRUE)",
-        "Config/roxygen2/version": "8.0.0"
+        "Config/roxygen2/version": "8.0.0",
+        "RemoteType": "github",
+        "RemoteHost": "api.github.com",
+        "RemoteRepo": "StatML",
+        "RemoteUsername": "ManuelSpinola",
+        "RemotePkgRef": "ManuelSpinola/StatML",
+        "RemoteRef": "HEAD",
+        "RemoteSha": "ca1ea7828c424c4294350056d56047a15e314b34",
+        "GithubRepo": "StatML",
+        "GithubUsername": "ManuelSpinola",
+        "GithubRef": "HEAD",
+        "GithubSHA1": "ca1ea7828c424c4294350056d56047a15e314b34",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-06-09 17:05:49 UTC; manuel_nuevo",
+        "Author": "Manuel Spínola [aut, cre]",
+        "Maintainer": "Manuel Spínola <manuel.spinola@una.cr>",
+        "Depends": "R (>= 4.1.0)",
+        "Built": "R 4.6.0; ; 2026-06-09 17:05:50 UTC; unix"
       }
     },
     "askpass": {
@@ -5800,10 +5817,13 @@
       "checksum": "f882cbaf1dc436e1c44fae59820131ae"
     },
     ".Rprofile": {
-      "checksum": "7ba6f56d1b64e2c75edec9fc2e567108"
+      "checksum": "a500f705832875271577ec15b3c7fc8a"
     },
     "app.R": {
       "checksum": "f6a3c802e5766a70574dfef0219dd76a"
+    },
+    "DESCRIPTION": {
+      "checksum": "7de5293930db656070e1a6c91e7b47b2"
     },
     "dev/run_dev.R": {
       "checksum": "7fd3203c9ff5d206859c974bfdfa8ffc"
@@ -5905,7 +5925,7 @@
       "checksum": "12bf789e041c1225c31680c3e7f4b4b7"
     },
     "renv.lock": {
-      "checksum": "6b8dafe6c37f38c31fb94127613e1b79"
+      "checksum": "5367da91dc688dd7a793ff5c69e0e7ed"
     }
   },
   "users": null
