@@ -557,7 +557,7 @@
       "Config/roxygen2/version": "8.0.0",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "StatMl",
+      "RemoteRepo": "StatML",
       "RemoteUsername": "ManuelSpinola",
       "RemotePkgRef": "ManuelSpinola/StatMl",
       "RemoteRef": "HEAD",
