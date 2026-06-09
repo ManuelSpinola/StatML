@@ -559,7 +559,7 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "StatML",
       "RemoteUsername": "ManuelSpinola",
-      "RemotePkgRef": "ManuelSpinola/StatMl",
+      "RemotePkgRef": "ManuelSpinola/StatML",
       "RemoteRef": "HEAD",
       "RemoteSha": "19354d7f1955b4f944b8a933d747282a1dd76ab8",
       "NeedsCompilation": "no",
