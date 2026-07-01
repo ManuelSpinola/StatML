@@ -10,3 +10,4 @@ renv/staging/
 rsconnect/
 .Rhistory
 .Rhistory
+.DS_Store
