@@ -79,26 +79,76 @@ mod_xgb_clas_ui <- function(id) {
       bslib::nav_panel(
         "Los datos",
         icon = bsicons::bs_icon("table"),
-        br(),
-        fluidRow(
-          column(4,
-            selectInput(ns("dataset"), "Dataset",
-              choices = c(
-                "Presencia/ausencia de aves (paisaje)" = "aves_pa_paisaje",
-                "Frogs (rana)" = "frogs",
-                "Sacramento (vivienda)" = "sacramento",
-                "Titanic" = "titanic_ml",
-                "Wine Quality (red)" = "winequality_red"
+        bslib::card_body(
+          bslib::navset_pill(
+
+            bslib::nav_panel(
+              title = tagList(bsicons::bs_icon("collection", class = "me-1"),
+                              "Datos de ejemplo"),
+              br(),
+              bslib::layout_columns(
+                col_widths = c(4, 8),
+                div(
+                  selectInput(ns("dataset"), "Seleccionar dataset:",
+                    choices = c(
+                      "Presencia/ausencia de aves (paisaje)" = "aves_pa_paisaje",
+                      "Presencia/ausencia de ranas"          = "frogs",
+                      "Sacramento (vivienda)"                = "sacramento",
+                      "Supervivencia en el Titanic"          = "titanic_ml",
+                      "Calidad de vino tinto"                = "winequality_red"
+                    )
+                  ),
+                  uiOutput(ns("info_dataset"))
+                ),
+                bslib::card(
+                  bslib::card_header(bsicons::bs_icon("eye", class = "me-1"),
+                                     "Vista previa"),
+                  bslib::card_body(style = "overflow: auto;",
+                    uiOutput(ns("metricas_datos")), br(),
+                    DT::DTOutput(ns("tabla_datos"))
+                  )
+                )
+              )
+            ),
+
+            bslib::nav_panel(
+              title = tagList(bsicons::bs_icon("folder2-open", class = "me-1"),
+                              "Mis datos"),
+              br(),
+              bslib::layout_columns(
+                col_widths = c(4, 8),
+                div(
+                  p(class = "small text-muted mb-3",
+                    bsicons::bs_icon("info-circle", class = "me-1"),
+                    "Sube un archivo CSV o Excel. ",
+                    "La primera fila debe contener los nombres de las columnas."),
+                  fileInput(ns("archivo_datos"),
+                    label = "Seleccionar archivo:",
+                    accept = c(".csv", ".xlsx", ".xls"),
+                    buttonLabel = "Buscar\u2026",
+                    placeholder = "CSV o Excel"
+                  ),
+                  selectInput(ns("separador"),
+                    label = "Separador (CSV):",
+                    choices = c("Coma (,)" = ",", "Punto y coma (;)" = ";",
+                                "Tabulador" = "\t"),
+                    selected = ","
+                  ),
+                  tags$hr(),
+                  uiOutput(ns("resumen_datos_propio"))
+                ),
+                bslib::card(
+                  bslib::card_header(bsicons::bs_icon("eye", class = "me-1"),
+                                     "Vista previa"),
+                  bslib::card_body(style = "overflow: auto;",
+                    uiOutput(ns("metricas_datos_propio")), br(),
+                    DT::DTOutput(ns("tabla_datos_propio"))
+                  )
+                )
               )
             )
           )
-        ),
-        hr(),
-        h5("Vista previa"),
-        DT::DTOutput(ns("tabla_datos")),
-        hr(),
-        h5("Resumen"),
-        verbatimTextOutput(ns("resumen_datos"))
+        )
       ),
 
       # ── 4. Explorar ──────────────────────────────────────────────────────
@@ -285,10 +335,105 @@ mod_xgb_clas_server <- function(id) {
     })
 
     # ── Tab 3: Los datos ────────────────────────────────────────────────────
-    output$tabla_datos <- DT::renderDT({
-      DT::datatable(datos_raw(), options = list(pageLength = 8, scrollX = TRUE))
+    output$metricas_datos <- renderUI({
+      req(datos_raw())
+      df <- datos_raw()
+      n_num <- sum(sapply(df, is.numeric))
+      n_cat <- sum(sapply(df, function(x) is.factor(x) || is.character(x)))
+      fluidRow(
+        column(4, div(
+          style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px; padding:1rem; text-align:center;",
+          div(style = "font-size:1.8rem; font-weight:700; color:#1170AA;", nrow(df)),
+          div(style = "font-size:0.82rem; color:#57606C;", "Observaciones")
+        )),
+        column(4, div(
+          style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px; padding:1rem; text-align:center;",
+          div(style = "font-size:1.8rem; font-weight:700; color:#FC7D0B;", n_num),
+          div(style = "font-size:0.82rem; color:#57606C;", "Num\u00e9ricas")
+        )),
+        column(4, div(
+          style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px; padding:1rem; text-align:center;",
+          div(style = "font-size:1.8rem; font-weight:700; color:#1170AA;", n_cat),
+          div(style = "font-size:0.82rem; color:#57606C;", "Categ\u00f3ricas")
+        ))
+      )
     })
+
+    output$info_dataset <- renderUI({
+      req(input$dataset)
+      descripciones <- list(
+        aves_pa_paisaje = "Presencia/ausencia de aves en 600 sitios del paisaje. Variables de cobertura forestal, altitud, temperatura.",
+        frogs           = "Presencia/ausencia de ranas en sitios con variables ambientales.",
+        sacramento      = "Tipo de propiedad en Sacramento. Variables: camas, ba\u00f1os, \u00e1rea, coordenadas.",
+        titanic_ml      = "Supervivencia en el Titanic. Variables: clase, edad, sexo, tarifa.",
+        winequality_red = "Calidad de vino tinto (alta/baja) en funci\u00f3n de 11 caracter\u00edsticas fisioqu\u00edmicas."
+      )
+      desc <- descripciones[[input$dataset]]
+      if (is.null(desc)) return(NULL)
+      div(class = "alert alert-info small py-2 px-3 mt-2 mb-0",
+          bsicons::bs_icon("info-circle-fill", class = "me-1"), desc)
+    })
+
+    output$tabla_datos <- DT::renderDT({
+      DT::datatable(datos_raw(), rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+    })
+
     output$resumen_datos <- renderPrint({ summary(datos_raw()) })
+
+    # ── Datos propios ────────────────────────────────────────────────────────
+    datos_propio_xgb <- reactive({
+      req(input$archivo_datos)
+      ext <- tools::file_ext(input$archivo_datos$name)
+      tryCatch({
+        df <- if (ext %in% c("xlsx", "xls"))
+          readxl::read_excel(input$archivo_datos$datapath)
+        else
+          readr::read_delim(input$archivo_datos$datapath,
+                            delim = input$separador, show_col_types = FALSE)
+        dplyr::mutate(df, dplyr::across(where(is.character), as.factor))
+      }, error = function(e) {
+        showNotification(paste("Error:", conditionMessage(e)), type = "error"); NULL
+      })
+    })
+
+    output$resumen_datos_propio <- renderUI({
+      req(datos_propio_xgb())
+      d <- datos_propio_xgb()
+      div(class = "small text-muted",
+          bsicons::bs_icon("check-circle-fill", class = "me-1"),
+          paste0(nrow(d), " filas \u00b7 ", ncol(d), " columnas"))
+    })
+
+    output$metricas_datos_propio <- renderUI({
+      req(datos_propio_xgb())
+      df <- datos_propio_xgb()
+      n_num <- sum(sapply(df, is.numeric))
+      n_cat <- sum(sapply(df, function(x) is.factor(x) || is.character(x)))
+      fluidRow(
+        column(4, div(
+          style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px; padding:1rem; text-align:center;",
+          div(style = "font-size:1.8rem; font-weight:700; color:#1170AA;", nrow(df)),
+          div(style = "font-size:0.82rem; color:#57606C;", "Observaciones")
+        )),
+        column(4, div(
+          style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px; padding:1rem; text-align:center;",
+          div(style = "font-size:1.8rem; font-weight:700; color:#FC7D0B;", n_num),
+          div(style = "font-size:0.82rem; color:#57606C;", "Num\u00e9ricas")
+        )),
+        column(4, div(
+          style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px; padding:1rem; text-align:center;",
+          div(style = "font-size:1.8rem; font-weight:700; color:#1170AA;", n_cat),
+          div(style = "font-size:0.82rem; color:#57606C;", "Categ\u00f3ricas")
+        ))
+      )
+    })
+
+    output$tabla_datos_propio <- DT::renderDT({
+      req(datos_propio_xgb())
+      DT::datatable(datos_propio_xgb(), rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+    })
 
     # ── Tab 4: Explorar ─────────────────────────────────────────────────────
     vars_factor <- reactive({

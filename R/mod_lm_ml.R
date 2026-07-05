@@ -11,6 +11,7 @@ mod_lm_ml_ui <- function(id) {
 
   tagList(
     bslib::navset_card_tab(
+      title = "Regresión lineal — ML",
       id = ns("tabs"),
 
       # PESTAÑA 1: ¿Qué es?
@@ -196,60 +197,71 @@ mod_lm_ml_ui <- function(id) {
         bslib::card_body(
           bslib::navset_pill(
 
-            bslib::nav_panel(
-              title = tagList(bsicons::bs_icon("database", class = "me-1"), "Cargar datos"),
+                        bslib::nav_panel(
+              title = tagList(bsicons::bs_icon("collection", class = "me-1"), "Datos de ejemplo"),
               br(),
               bslib::layout_columns(
                 col_widths = c(4, 8),
-                bslib::card(
-                  bslib::card_header(bsicons::bs_icon("folder2-open", class = "me-1"),
-                                     "Fuente de datos"),
-                  bslib::card_body(
-                    style = "overflow: visible; height: auto;",
-                    radioButtons(ns("fuente_datos"),
-                      label   = tagList(bsicons::bs_icon("database", class = "me-1"),
-                                        "Datos de ejemplo:"),
-                      choices = c(
-                        "Densidad de aves (paisaje)"   = "aves_densidad_paisaje",
-                        "Abundancia de aves (paisaje)"  = "aves_conteo_paisaje",
-                        "Biomasa forestal"             = "biomasa_paisaje",
-                        "Talla de cangrejo violinista"         = "pie_crab",
-                        "Sacramento (precios de casas)"       = "sacramento",
-                        "Calidad de vino tinto"        = "winequality_red",
-                        "Cargar mis propios datos"     = "propio"
-                      ),
-                      selected = "aves_densidad_paisaje"
-                    ),
-                    tags$hr(),
-                    fileInput(ns("archivo_datos"),
-                      label       = "Seleccionar archivo:",
-                      accept      = c(".csv", ".xlsx", ".xls"),
-                      buttonLabel = "Buscar…",
-                      placeholder = "CSV o Excel"
-                    ),
-                    selectInput(ns("separador"),
-                      label    = "Separador (CSV):",
-                      choices  = c("Coma (,)" = ",", "Punto y coma (;)" = ";", "Tabulador" = "\t"),
-                      selected = ","
-                    ),
-                    p(class = "small text-muted mb-0",
-                      bsicons::bs_icon("info-circle", class = "me-1"),
-                      "La primera fila debe contener los nombres de las columnas."),
-                    tags$hr(),
-                    uiOutput(ns("info_dataset"))
-                  )
+                div(
+                  radioButtons(ns("fuente_datos"),
+                    label = tagList(bsicons::bs_icon("database", class = "me-1"),
+                                    "Seleccionar dataset:"),
+                    choices = c("Densidad de aves (paisaje)" = "aves_densidad_paisaje",
+                        "Abundancia de aves (paisaje)" = "aves_conteo_paisaje",
+                        "Biomasa forestal" = "biomasa_paisaje",
+                        "Talla de cangrejo violinista" = "pie_crab",
+                        "Sacramento (precios de casas)" = "sacramento",
+                        "Calidad de vino tinto" = "winequality_red"),
+                    selected = "aves_densidad_paisaje"
+                  ),
+                  tags$hr(),
+                  uiOutput(ns("info_dataset"))
                 ),
                 bslib::card(
                   bslib::card_header(bsicons::bs_icon("eye", class = "me-1"), "Vista previa"),
-                  bslib::card_body(
-                    style = "overflow: auto;",
-                    uiOutput(ns("metricas_datos")),
-                    br(),
+                  bslib::card_body(style = "overflow: auto;",
+                    uiOutput(ns("metricas_datos")), br(),
                     DT::DTOutput(ns("tabla_vista_previa"))
                   )
                 )
               )
             ),
+
+            bslib::nav_panel(
+              title = tagList(bsicons::bs_icon("folder2-open", class = "me-1"), "Mis datos"),
+              br(),
+              bslib::layout_columns(
+                col_widths = c(4, 8),
+                div(
+                  p(class = "small text-muted mb-3",
+                    bsicons::bs_icon("info-circle", class = "me-1"),
+                    "Sube un archivo CSV o Excel. ",
+                    "La primera fila debe contener los nombres de las columnas."),
+                  fileInput(ns("archivo_datos"),
+                    label = "Seleccionar archivo:",
+                    accept = c(".csv", ".xlsx", ".xls"),
+                    buttonLabel = "Buscar…",
+                    placeholder = "CSV o Excel"
+                  ),
+                  selectInput(ns("separador"),
+                    label = "Separador (CSV):",
+                    choices = c("Coma (,)" = ",", "Punto y coma (;)" = ";", "Tabulador" = "\t"),
+                    selected = ","
+                  ),
+                  tags$hr(),
+                  uiOutput(ns("resumen_datos_propio"))
+                ),
+                bslib::card(
+                  bslib::card_header(bsicons::bs_icon("eye", class = "me-1"), "Vista previa"),
+                  bslib::card_body(style = "overflow: auto;",
+                    uiOutput(ns("metricas_datos_propio")), br(),
+                    DT::DTOutput(ns("tabla_vista_previa_propio"))
+                  )
+                )
+              )
+            ),
+
+            
 
             bslib::nav_panel(
               title = tagList(bsicons::bs_icon("sliders2", class = "me-1"),
@@ -626,36 +638,20 @@ mod_lm_ml_server <- function(id) {
       showNotification("Tipos aplicados.", type = "message", duration = 2)
     })
 
-    datos_raw <- reactive({
+        datos_raw <- reactive({
       fuente <- input$fuente_datos
       req(!is.null(fuente) && nchar(fuente) > 0)
-      if (fuente != "propio") {
-        tryCatch({
-          e <- new.env()
-          load(system.file(paste0("app/data/", fuente, ".rda"), package = "StatML"), envir = e)
-          df <- get(fuente, envir = e)
-          dplyr::mutate(df, dplyr::across(where(is.character), as.factor))
-        }, error = function(err) {
-          showNotification(paste("Error al cargar dataset:", conditionMessage(err)),
-                           type = "error", duration = 6)
-          NULL
-        })
-      } else {
-        req(input$archivo_datos)
-        ext <- tools::file_ext(input$archivo_datos$name)
-        tryCatch({
-          df <- if (ext %in% c("xlsx", "xls"))
-            readxl::read_excel(input$archivo_datos$datapath)
-          else
-            readr::read_delim(input$archivo_datos$datapath,
-                              delim = input$separador, show_col_types = FALSE)
-          dplyr::mutate(df, dplyr::across(where(is.character), as.factor))
-        }, error = function(e) {
-          showNotification(paste("Error al leer el archivo:", conditionMessage(e)),
-                           type = "error", duration = 6)
-          NULL
-        })
-      }
+      tryCatch({
+        e <- new.env()
+        load(system.file(paste0("app/data/", fuente, ".rda"),
+                         package = "StatML"), envir = e)
+        df <- get(fuente, envir = e)
+        dplyr::mutate(df, dplyr::across(where(is.character), as.factor))
+      }, error = function(err) {
+        showNotification(paste("Error al cargar dataset:", conditionMessage(err)),
+                         type = "error", duration = 6)
+        NULL
+      })
     })
 
     output$info_dataset <- renderUI({
@@ -703,9 +699,62 @@ mod_lm_ml_server <- function(id) {
 
     output$tabla_vista_previa <- DT::renderDT({
       req(datos_raw())
-      DT::datatable(datos_raw(),
-        options = list(scrollX = TRUE, pageLength = 10, dom = "tip"),
-        rownames = FALSE)
+      DT::datatable(datos_raw(), rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+    })
+
+    # ── Datos propios ─────────────────────────────────
+    datos_propio_ml <- reactive({
+      req(input$archivo_datos)
+      ext <- tools::file_ext(input$archivo_datos$name)
+      tryCatch({
+        df <- if (ext %in% c("xlsx", "xls"))
+          readxl::read_excel(input$archivo_datos$datapath)
+        else
+          readr::read_delim(input$archivo_datos$datapath,
+                            delim = input$separador, show_col_types = FALSE)
+        dplyr::mutate(df, dplyr::across(where(is.character), as.factor))
+      }, error = function(e) {
+        showNotification(paste("Error:", conditionMessage(e)), type = "error"); NULL
+      })
+    })
+
+    output$resumen_datos_propio <- renderUI({
+      req(datos_propio_ml())
+      d <- datos_propio_ml()
+      div(class = "small text-muted",
+          bsicons::bs_icon("check-circle-fill", class = "me-1"),
+          paste0(nrow(d), " filas \u00b7 ", ncol(d), " columnas"))
+    })
+
+    output$metricas_datos_propio <- renderUI({
+      req(datos_propio_ml())
+      df <- datos_propio_ml()
+      n_num <- sum(sapply(df, is.numeric))
+      n_cat <- sum(sapply(df, function(x) is.factor(x) || is.character(x)))
+      fluidRow(
+        column(4, div(
+          style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px; padding:1rem; text-align:center;",
+          div(style = "font-size:1.8rem; font-weight:700; color:#1170AA;", nrow(df)),
+          div(style = "font-size:0.82rem; color:#57606C;", "Observaciones")
+        )),
+        column(4, div(
+          style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px; padding:1rem; text-align:center;",
+          div(style = "font-size:1.8rem; font-weight:700; color:#FC7D0B;", n_num),
+          div(style = "font-size:0.82rem; color:#57606C;", "Num\u00e9ricas")
+        )),
+        column(4, div(
+          style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px; padding:1rem; text-align:center;",
+          div(style = "font-size:1.8rem; font-weight:700; color:#1170AA;", n_cat),
+          div(style = "font-size:0.82rem; color:#57606C;", "Categ\u00f3ricas")
+        ))
+      )
+    })
+
+    output$tabla_vista_previa_propio <- DT::renderDT({
+      req(datos_propio_ml())
+      DT::datatable(datos_propio_ml(), rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
     })
 
     output$tabla_tipos <- renderUI({
