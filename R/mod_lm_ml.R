@@ -432,10 +432,16 @@ mod_lm_ml_ui <- function(id) {
           fluidRow(
             column(6,
               h6("Residuos vs Valores ajustados"),
+              p(class = "small text-muted",
+                "Busc\u00e1 dispersi\u00f3n sin patr\u00f3n alrededor de la l\u00ednea en 0. ",
+                "Una curva indica relaci\u00f3n no lineal; un embudo indica varianza no constante (heterocedasticidad)."),
               plotly::plotlyOutput(ns("plot_resid_fitted"), height = "300px")
             ),
             column(6,
               h6("Q-Q Normal de residuos"),
+              p(class = "small text-muted",
+                "Busc\u00e1 puntos alineados sobre la diagonal. ",
+                "Colas que se despegan indican residuos con colas m\u00e1s pesadas que una normal (ver prueba Shapiro-Wilk abajo)."),
               plotly::plotlyOutput(ns("plot_qq"), height = "300px")
             )
           ),
@@ -443,10 +449,16 @@ mod_lm_ml_ui <- function(id) {
           fluidRow(
             column(6,
               h6("Scale-Location"),
+              p(class = "small text-muted",
+                "Busc\u00e1 una l\u00ednea plana (dispersi\u00f3n constante) a lo largo del eje X. ",
+                "Una tendencia creciente confirma heterocedasticidad: el error crece junto con los valores ajustados."),
               plotly::plotlyOutput(ns("plot_scale_loc"), height = "300px")
             ),
             column(6,
               h6("Residuos vs Leverage"),
+              p(class = "small text-muted",
+                "Busc\u00e1 puntos dentro de las l\u00edneas punteadas (\u00b12). ",
+                "Puntos fuera, sobre todo con leverage alto (a la derecha), son casos influyentes que pueden distorsionar el modelo."),
               plotly::plotlyOutput(ns("plot_leverage"), height = "300px")
             )
           ),
