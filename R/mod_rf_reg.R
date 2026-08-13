@@ -543,7 +543,11 @@ mod_rf_reg_ui <- function(id) {
                   numericInput(ns("grid_size"),
                     label = "Tamaño del grid",
                     value = 10, min = 5, max = 30, step = 5
-                  )
+                  ),
+                  p(class = "small text-muted mb-0",
+                    "Cu\u00e1ntas combinaciones de hiperpar\u00e1metros se van a probar. ",
+                    "M\u00e1s combinaciones = b\u00fasqueda m\u00e1s fina, pero m\u00e1s lenta ",
+                    "(este n\u00famero se multiplica por los folds de CV).")
                 )
               ),
               div(class = "card",
@@ -650,6 +654,23 @@ mod_rf_reg_ui <- function(id) {
         title = "Predicciones",
         icon  = bsicons::bs_icon("crosshair"),
         div(class = "p-3",
+          fluidRow(
+            column(12,
+              div(class = "card mb-3",
+                div(class = "card-header", "Predicci\u00f3n para un caso nuevo"),
+                div(class = "card-body",
+                  p(class = "small text-muted",
+                    "Ingres\u00e1 valores para cada predictor y obten\u00e9 la predicci\u00f3n ",
+                    "puntual del modelo ajustado (no son los datos de prueba, es un caso nuevo)."),
+                  uiOutput(ns("inputs_prediccion")),
+                  actionButton(ns("btn_predecir_nuevo"),
+                    label = tagList(bsicons::bs_icon("magic"), " Predecir"),
+                    class = "btn-primary mt-2"),
+                  uiOutput(ns("resultado_prediccion_nuevo"))
+                )
+              )
+            )
+          ),
           fluidRow(
             column(8,
               h6("Valores observados vs predichos (datos de prueba)"),
@@ -1367,19 +1388,41 @@ mod_rf_reg_server <- function(id) {
     })
 
     output$plot_oob <- plotly::renderPlotly({
-      req(modelo_ajustado())
+      req(modelo_ajustado(), split_datos())
       tryCatch({
         rf_fit <- tune::extract_fit_engine(modelo_ajustado()$.workflow[[1]])
         if (!is.null(rf_fit$prediction.error)) {
-          oob_df <- data.frame(
-            trees = seq_along(rf_fit$forest$child.nodeIDs),
-            oob   = rf_fit$prediction.error
-          )
-          p <- ggplot2::ggplot(data.frame(oob = rf_fit$prediction.error),
-                               ggplot2::aes(x = 1, y = oob)) +
-            ggplot2::geom_col(fill = colores$primario) +
+
+          # ranger solo guarda el error OOB final (un número), no la curva
+          # por número de árboles. Se reconstruye reentrenando con los
+          # mismos hiperparámetros del modelo final variando num.trees.
+          train    <- rsample::training(split_datos())
+          rec_prep <- recipes::prep(hacer_receta(train))
+          datos_bk <- recipes::bake(rec_prep, new_data = NULL)
+
+          formula_rf <- stats::as.formula(paste(input$var_respuesta, "~ ."))
+          n_final    <- rf_fit$num.trees
+          grid_arb   <- unique(round(seq(10, n_final, length.out = 15)))
+
+          oob_curva <- vapply(grid_arb, function(nt) {
+            ranger::ranger(
+              formula       = formula_rf,
+              data          = datos_bk,
+              num.trees     = nt,
+              mtry          = rf_fit$mtry,
+              min.node.size = rf_fit$min.node.size,
+              importance    = "none"
+            )$prediction.error
+          }, numeric(1))
+
+          oob_df <- data.frame(trees = grid_arb, oob = oob_curva)
+
+          p <- ggplot2::ggplot(oob_df, ggplot2::aes(x = trees, y = oob)) +
+            ggplot2::geom_line(color = colores$primario, linewidth = 1) +
+            ggplot2::geom_point(color = colores$primario) +
             ggplot2::theme_minimal() +
-            ggplot2::labs(x = NULL, y = "OOB Error (MSE)", title = "Error Out-of-Bag")
+            ggplot2::labs(x = "N\u00famero de \u00e1rboles", y = "OOB Error (MSE)",
+                          title = "Convergencia del error Out-of-Bag")
           plotly::ggplotly(p)
         } else {
           plotly::plot_ly() |>
@@ -1481,6 +1524,60 @@ mod_rf_reg_server <- function(id) {
 
     # PESTAÑA 9: Predicciones
     # ════════════════════════════════════════════════
+
+    output$inputs_prediccion <- renderUI({
+      req(modelo_ajustado(), input$predictores, split_datos())
+      train <- rsample::training(split_datos())
+      tagList(
+        lapply(input$predictores, function(v) {
+          col <- train[[v]]
+          if (is.numeric(col)) {
+            numericInput(ns(paste0("nuevo_", v)), v,
+                         value = round(mean(col, na.rm = TRUE), 2))
+          } else {
+            selectInput(ns(paste0("nuevo_", v)), v,
+                       choices = levels(as.factor(col)))
+          }
+        })
+      )
+    })
+
+    pred_nueva <- eventReactive(input$btn_predecir_nuevo, {
+      req(modelo_ajustado(), input$predictores, split_datos())
+      tryCatch({
+        train <- rsample::training(split_datos())
+        valores <- lapply(input$predictores, function(v) input[[paste0("nuevo_", v)]])
+        names(valores) <- input$predictores
+        nuevo_df <- as.data.frame(valores, stringsAsFactors = FALSE)
+
+        # Igualar tipos y niveles de factor a los datos de entrenamiento
+        for (v in input$predictores) {
+          if (is.factor(train[[v]])) {
+            nuevo_df[[v]] <- factor(nuevo_df[[v]], levels = levels(train[[v]]))
+          } else {
+            nuevo_df[[v]] <- as.numeric(nuevo_df[[v]])
+          }
+        }
+
+        wf   <- modelo_ajustado()$.workflow[[1]]
+        pred <- predict(wf, new_data = nuevo_df)
+        pred$.pred[1]
+      }, error = function(e) {
+        showNotification(paste("Error en predicci\u00f3n:", conditionMessage(e)),
+                         type = "error", duration = 6)
+        NA
+      })
+    })
+
+    output$resultado_prediccion_nuevo <- renderUI({
+      req(pred_nueva())
+      valor <- pred_nueva()
+      if (is.na(valor)) return(NULL)
+      div(class = "alert alert-success mt-3 mb-0",
+        strong(paste0("Predicci\u00f3n de ", input$var_respuesta, ": ")),
+        round(valor, 3)
+      )
+    })
 
     preds_test <- reactive({
       req(modelo_ajustado())

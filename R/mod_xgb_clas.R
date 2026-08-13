@@ -272,6 +272,19 @@ mod_xgb_clas_ui <- function(id) {
         "Predicciones",
         icon = bsicons::bs_icon("bullseye"),
         br(),
+        div(class = "card mb-3",
+          div(class = "card-header", "Predicci\u00f3n para un caso nuevo"),
+          div(class = "card-body",
+            p(class = "small text-muted",
+              "Ingres\u00e1 valores para cada predictor y obten\u00e9 la clase predicha ",
+              "con su probabilidad (no son los datos de prueba, es un caso nuevo)."),
+            uiOutput(ns("inputs_prediccion")),
+            actionButton(ns("btn_predecir_nuevo"),
+              label = tagList(bsicons::bs_icon("magic"), " Predecir"),
+              class = "btn-primary mt-2"),
+            uiOutput(ns("resultado_prediccion_nuevo"))
+          )
+        ),
         h5("Predicciones en el conjunto de prueba"),
         DT::DTOutput(ns("tabla_pred")),
         hr(),
@@ -598,6 +611,72 @@ mod_xgb_clas_server <- function(id) {
     }, digits = 5)
 
     # ── Predicciones ────────────────────────────────────────────────────────
+    output$inputs_prediccion <- renderUI({
+      req(modelo_final(), input$x_pre, train_data())
+      train <- train_data()
+      tagList(
+        lapply(input$x_pre, function(v) {
+          col <- train[[v]]
+          if (is.numeric(col)) {
+            numericInput(ns(paste0("nuevo_", v)), v,
+                         value = round(mean(col, na.rm = TRUE), 2))
+          } else {
+            selectInput(ns(paste0("nuevo_", v)), v,
+                       choices = levels(as.factor(col)))
+          }
+        })
+      )
+    })
+
+    pred_nueva <- eventReactive(input$btn_predecir_nuevo, {
+      req(modelo_final(), input$x_pre, train_data(), input$y_pre)
+      tryCatch({
+        train <- train_data()
+        valores <- lapply(input$x_pre, function(v) input[[paste0("nuevo_", v)]])
+        names(valores) <- input$x_pre
+        nuevo_df <- as.data.frame(valores, stringsAsFactors = FALSE)
+
+        # Igualar tipos y niveles de factor a los datos de entrenamiento
+        for (v in input$x_pre) {
+          if (is.factor(train[[v]])) {
+            nuevo_df[[v]] <- factor(nuevo_df[[v]], levels = levels(train[[v]]))
+          } else {
+            nuevo_df[[v]] <- as.numeric(nuevo_df[[v]])
+          }
+        }
+
+        clase <- stats::predict(modelo_final(), new_data = nuevo_df)$.pred_class[1]
+        probs <- stats::predict(modelo_final(), new_data = nuevo_df, type = "prob")
+        list(clase = as.character(clase), probs = probs)
+      }, error = function(e) {
+        showNotification(paste("Error en predicci\u00f3n:", conditionMessage(e)),
+                         type = "error", duration = 6)
+        NULL
+      })
+    })
+
+    output$resultado_prediccion_nuevo <- renderUI({
+      res <- pred_nueva()
+      req(res)
+      probs_df <- data.frame(
+        Clase        = sub("^\\.pred_", "", names(res$probs)),
+        Probabilidad = round(as.numeric(res$probs[1, ]), 3)
+      )
+      probs_df <- probs_df[order(-probs_df$Probabilidad), ]
+      filas <- lapply(seq_len(nrow(probs_df)), function(i) {
+        tags$tr(tags$td(probs_df$Clase[i]), tags$td(probs_df$Probabilidad[i]))
+      })
+      tagList(
+        div(class = "alert alert-success mt-3 mb-2",
+          strong(paste0("Clase predicha (", input$y_pre, "): ")), res$clase
+        ),
+        tags$table(class = "table table-sm table-striped",
+          tags$thead(tags$tr(tags$th("Clase"), tags$th("Probabilidad"))),
+          tags$tbody(filas)
+        )
+      )
+    })
+
     preds_test_class <- reactive({
       req(modelo_final(), input$y_pre)
       stats::predict(modelo_final(), new_data = test_data()) |>

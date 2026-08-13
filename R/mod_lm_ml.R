@@ -519,6 +519,23 @@ mod_lm_ml_ui <- function(id) {
         icon  = bsicons::bs_icon("crosshair"),
         div(class = "p-3",
           fluidRow(
+            column(12,
+              div(class = "card mb-3",
+                div(class = "card-header", "Predicci\u00f3n para un caso nuevo"),
+                div(class = "card-body",
+                  p(class = "small text-muted",
+                    "Ingres\u00e1 valores para cada predictor y obten\u00e9 la predicci\u00f3n ",
+                    "puntual del modelo ajustado (no son los datos de prueba, es un caso nuevo)."),
+                  uiOutput(ns("inputs_prediccion")),
+                  actionButton(ns("btn_predecir_nuevo"),
+                    label = tagList(bsicons::bs_icon("magic"), " Predecir"),
+                    class = "btn-primary mt-2"),
+                  uiOutput(ns("resultado_prediccion_nuevo"))
+                )
+              )
+            )
+          ),
+          fluidRow(
             column(8,
               h6("Valores observados vs predichos (datos de prueba)"),
               plotly::plotlyOutput(ns("plot_obs_pred"), height = "400px")
@@ -1386,6 +1403,60 @@ mod_lm_ml_server <- function(id) {
 
     # PESTAÑA 9: Predicciones
     # ════════════════════════════════════════════════
+
+    output$inputs_prediccion <- renderUI({
+      req(modelo_ajustado(), input$predictores, split_datos())
+      train <- rsample::training(split_datos())
+      tagList(
+        lapply(input$predictores, function(v) {
+          col <- train[[v]]
+          if (is.numeric(col)) {
+            numericInput(ns(paste0("nuevo_", v)), v,
+                         value = round(mean(col, na.rm = TRUE), 2))
+          } else {
+            selectInput(ns(paste0("nuevo_", v)), v,
+                       choices = levels(as.factor(col)))
+          }
+        })
+      )
+    })
+
+    pred_nueva <- eventReactive(input$btn_predecir_nuevo, {
+      req(modelo_ajustado(), input$predictores, split_datos())
+      tryCatch({
+        train <- rsample::training(split_datos())
+        valores <- lapply(input$predictores, function(v) input[[paste0("nuevo_", v)]])
+        names(valores) <- input$predictores
+        nuevo_df <- as.data.frame(valores, stringsAsFactors = FALSE)
+
+        # Igualar tipos y niveles de factor a los datos de entrenamiento
+        for (v in input$predictores) {
+          if (is.factor(train[[v]])) {
+            nuevo_df[[v]] <- factor(nuevo_df[[v]], levels = levels(train[[v]]))
+          } else {
+            nuevo_df[[v]] <- as.numeric(nuevo_df[[v]])
+          }
+        }
+
+        wf   <- modelo_ajustado()$.workflow[[1]]
+        pred <- predict(wf, new_data = nuevo_df)
+        pred$.pred[1]
+      }, error = function(e) {
+        showNotification(paste("Error en predicci\u00f3n:", conditionMessage(e)),
+                         type = "error", duration = 6)
+        NA
+      })
+    })
+
+    output$resultado_prediccion_nuevo <- renderUI({
+      req(pred_nueva())
+      valor <- pred_nueva()
+      if (is.na(valor)) return(NULL)
+      div(class = "alert alert-success mt-3 mb-0",
+        strong(paste0("Predicci\u00f3n de ", input$var_respuesta, ": ")),
+        round(valor, 3)
+      )
+    })
 
     preds_test <- reactive({
       req(modelo_ajustado())

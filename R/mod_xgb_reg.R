@@ -254,6 +254,19 @@ mod_xgb_reg_ui <- function(id) {
         "Predicciones",
         icon = bsicons::bs_icon("bullseye"),
         br(),
+        div(class = "card mb-3",
+          div(class = "card-header", "Predicci\u00f3n para un caso nuevo"),
+          div(class = "card-body",
+            p(class = "small text-muted",
+              "Ingres\u00e1 valores para cada predictor y obten\u00e9 la predicci\u00f3n ",
+              "puntual del modelo ajustado (no son los datos de prueba, es un caso nuevo)."),
+            uiOutput(ns("inputs_prediccion")),
+            actionButton(ns("btn_predecir_nuevo"),
+              label = tagList(bsicons::bs_icon("magic"), " Predecir"),
+              class = "btn-primary mt-2"),
+            uiOutput(ns("resultado_prediccion_nuevo"))
+          )
+        ),
         h5("Predicciones en el conjunto de prueba"),
         DT::DTOutput(ns("tabla_pred")),
         hr(),
@@ -558,6 +571,59 @@ mod_xgb_reg_server <- function(id) {
     }, digits = 5)
 
     # ── Predicciones ────────────────────────────────────────────────────────
+    output$inputs_prediccion <- renderUI({
+      req(modelo_final(), input$x_pre, train_data())
+      train <- train_data()
+      tagList(
+        lapply(input$x_pre, function(v) {
+          col <- train[[v]]
+          if (is.numeric(col)) {
+            numericInput(ns(paste0("nuevo_", v)), v,
+                         value = round(mean(col, na.rm = TRUE), 2))
+          } else {
+            selectInput(ns(paste0("nuevo_", v)), v,
+                       choices = levels(as.factor(col)))
+          }
+        })
+      )
+    })
+
+    pred_nueva <- eventReactive(input$btn_predecir_nuevo, {
+      req(modelo_final(), input$x_pre, train_data())
+      tryCatch({
+        train <- train_data()
+        valores <- lapply(input$x_pre, function(v) input[[paste0("nuevo_", v)]])
+        names(valores) <- input$x_pre
+        nuevo_df <- as.data.frame(valores, stringsAsFactors = FALSE)
+
+        # Igualar tipos y niveles de factor a los datos de entrenamiento
+        for (v in input$x_pre) {
+          if (is.factor(train[[v]])) {
+            nuevo_df[[v]] <- factor(nuevo_df[[v]], levels = levels(train[[v]]))
+          } else {
+            nuevo_df[[v]] <- as.numeric(nuevo_df[[v]])
+          }
+        }
+
+        pred <- stats::predict(modelo_final(), new_data = nuevo_df)
+        pred$.pred[1]
+      }, error = function(e) {
+        showNotification(paste("Error en predicci\u00f3n:", conditionMessage(e)),
+                         type = "error", duration = 6)
+        NA
+      })
+    })
+
+    output$resultado_prediccion_nuevo <- renderUI({
+      req(pred_nueva())
+      valor <- pred_nueva()
+      if (is.na(valor)) return(NULL)
+      div(class = "alert alert-success mt-3 mb-0",
+        strong(paste0("Predicci\u00f3n de ", input$y_pre, ": ")),
+        round(valor, 3)
+      )
+    })
+
     preds_test <- reactive({
       req(modelo_final())
       stats::predict(modelo_final(), new_data = test_data()) |>
