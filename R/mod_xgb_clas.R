@@ -182,7 +182,7 @@ mod_xgb_clas_ui <- function(id) {
               min = 0.5, max = 0.9, value = 0.75, step = 0.05),
             numericInput(ns("semilla"), "Semilla", value = 123, step = 1),
             hr(),
-            checkboxInput(ns("normalizar"), "Normalizar predictores (step_normalize)", value = TRUE),
+            checkboxInput(ns("normalizar"), "Estandarizar predictores (step_normalize)", value = TRUE),
             checkboxInput(ns("dummies"), "Crear dummies para variables categóricas (step_dummy)", value = TRUE)
           ),
           column(8,
@@ -241,7 +241,10 @@ mod_xgb_clas_ui <- function(id) {
         fluidRow(
           column(6,
             h5("Matriz de confusión — prueba"),
-            plotOutput(ns("plot_confusion"), height = "350px")
+            plotOutput(ns("plot_confusion"), height = "350px"),
+            p(class = "small text-muted mt-1",
+              "Calculada sobre el conjunto de prueba. Ninguna observación se excluye por el umbral: ",
+              "cada una se clasifica como positiva o negativa según si supera el umbral.")
           ),
           column(6,
             h5("Curva ROC — prueba"),
@@ -388,8 +391,12 @@ mod_xgb_clas_server <- function(id) {
     })
 
     output$tabla_datos <- DT::renderDT({
-      DT::datatable(datos_raw(), rownames = FALSE,
-        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+      req(datos_raw())
+      df <- datos_raw()
+      num_cols <- names(df)[sapply(df, is.numeric)]
+      DT::datatable(df, rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE)) |>
+        DT::formatRound(columns = num_cols, digits = 2)
     })
 
     output$resumen_datos <- renderPrint({ summary(datos_raw()) })
@@ -444,8 +451,11 @@ mod_xgb_clas_server <- function(id) {
 
     output$tabla_datos_propio <- DT::renderDT({
       req(datos_propio_xgb())
-      DT::datatable(datos_propio_xgb(), rownames = FALSE,
-        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+      df <- datos_propio_xgb()
+      num_cols <- names(df)[sapply(df, is.numeric)]
+      DT::datatable(df, rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE)) |>
+        DT::formatRound(columns = num_cols, digits = 2)
     })
 
     # ── Tab 4: Explorar ─────────────────────────────────────────────────────
@@ -703,7 +713,10 @@ mod_xgb_clas_server <- function(id) {
         ggplot2::autoplot(type = "heatmap") +
         ggplot2::scale_fill_gradient(low = "white", high = stat_palette()[1]) +
         stat_theme() +
-        ggplot2::labs(title = "Matriz de confusión — prueba")
+        ggplot2::labs(title = "Matriz de confusión — prueba",
+                      subtitle = paste0("n = ", nrow(test_data()), " de ",
+                                        nrow(train_data()) + nrow(test_data()),
+                                        " observaciones totales"))
     })
     output$plot_roc <- renderPlot({
       req(preds_test_class(), input$y_pre)

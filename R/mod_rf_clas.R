@@ -842,8 +842,11 @@ mod_rf_clas_server <- function(id) {
 
     output$tabla_vista_previa <- DT::renderDT({
       req(datos_raw())
-      DT::datatable(datos_raw(), rownames = FALSE,
-        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+      df <- datos_raw()
+      num_cols <- names(df)[sapply(df, is.numeric)]
+      DT::datatable(df, rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE)) |>
+        DT::formatRound(columns = num_cols, digits = 2)
     })
 
     # ── Datos propios ─────────────────────────────────
@@ -896,8 +899,11 @@ mod_rf_clas_server <- function(id) {
 
     output$tabla_vista_previa_propio <- DT::renderDT({
       req(datos_propio_ml())
-      DT::datatable(datos_propio_ml(), rownames = FALSE,
-        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+      df <- datos_propio_ml()
+      num_cols <- names(df)[sapply(df, is.numeric)]
+      DT::datatable(df, rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE)) |>
+        DT::formatRound(columns = num_cols, digits = 2)
     })
 
     output$tabla_tipos <- renderUI({
@@ -1638,6 +1644,11 @@ mod_rf_clas_server <- function(id) {
         div(class = "card",
           div(class = "card-header", paste0("Matriz de confusi\u00f3n (umbral = ", input$umbral, ")")),
           div(class = "card-body",
+            p(class = "small text-muted",
+              paste0("Calculada sobre el conjunto de prueba (n = ", nrow(test),
+                     " de ", nrow(test) + nrow(rsample::training(split_datos())),
+                     " observaciones totales). Ninguna observaci\u00f3n se excluye por el umbral: ",
+                     "cada una se clasifica como positiva o negativa seg\u00fan si supera el umbral.")),
             tags$table(class = "table table-sm table-bordered text-center",
               tags$thead(tags$tr(
                 tags$th(""),

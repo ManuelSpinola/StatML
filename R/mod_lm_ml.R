@@ -371,7 +371,7 @@ mod_lm_ml_ui <- function(id) {
                 div(class = "card-header", "Pasos de la receta"),
                 div(class = "card-body",
                   checkboxInput(ns("step_normalize"),
-                    "Normalizar predictores numéricos", value = TRUE),
+                    "Estandarizar predictores numéricos", value = TRUE),
                   checkboxInput(ns("step_dummy"),
                     "Variables dummy (categóricas)", value = TRUE),
                   checkboxInput(ns("step_zv"),
@@ -728,8 +728,11 @@ mod_lm_ml_server <- function(id) {
 
     output$tabla_vista_previa <- DT::renderDT({
       req(datos_raw())
-      DT::datatable(datos_raw(), rownames = FALSE,
-        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+      df <- datos_raw()
+      num_cols <- names(df)[sapply(df, is.numeric)]
+      DT::datatable(df, rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE)) |>
+        DT::formatRound(columns = num_cols, digits = 2)
     })
 
     # ── Datos propios ─────────────────────────────────
@@ -782,8 +785,11 @@ mod_lm_ml_server <- function(id) {
 
     output$tabla_vista_previa_propio <- DT::renderDT({
       req(datos_propio_ml())
-      DT::datatable(datos_propio_ml(), rownames = FALSE,
-        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+      df <- datos_propio_ml()
+      num_cols <- names(df)[sapply(df, is.numeric)]
+      DT::datatable(df, rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE)) |>
+        DT::formatRound(columns = num_cols, digits = 2)
     })
 
     output$tabla_tipos <- renderUI({
@@ -1029,7 +1035,7 @@ mod_lm_ml_server <- function(id) {
             tags$ul(
               tags$li(paste("Variable respuesta:", input$var_respuesta)),
               tags$li(paste("Predictores:", length(input$predictores))),
-              if (input$step_normalize) tags$li("✓ Normalización de predictores numéricos"),
+              if (input$step_normalize) tags$li("✓ Estandarización de predictores numéricos"),
               if (input$step_dummy)     tags$li("✓ Variables dummy para categóricas"),
               if (input$step_zv)        tags$li("✓ Eliminación de varianza cero")
             )

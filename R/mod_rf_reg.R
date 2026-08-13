@@ -847,8 +847,11 @@ mod_rf_reg_server <- function(id) {
 
     output$tabla_vista_previa <- DT::renderDT({
       req(datos_raw())
-      DT::datatable(datos_raw(), rownames = FALSE,
-        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+      df <- datos_raw()
+      num_cols <- names(df)[sapply(df, is.numeric)]
+      DT::datatable(df, rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE)) |>
+        DT::formatRound(columns = num_cols, digits = 2)
     })
 
     # ── Datos propios ─────────────────────────────────
@@ -901,8 +904,11 @@ mod_rf_reg_server <- function(id) {
 
     output$tabla_vista_previa_propio <- DT::renderDT({
       req(datos_propio_ml())
-      DT::datatable(datos_propio_ml(), rownames = FALSE,
-        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE))
+      df <- datos_propio_ml()
+      num_cols <- names(df)[sapply(df, is.numeric)]
+      DT::datatable(df, rownames = FALSE,
+        options = list(dom = "t", scrollY = "300px", scrollX = TRUE, paging = FALSE)) |>
+        DT::formatRound(columns = num_cols, digits = 2)
     })
 
     output$tabla_tipos <- renderUI({
