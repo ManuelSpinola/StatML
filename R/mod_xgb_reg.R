@@ -751,14 +751,22 @@ mod_xgb_reg_server <- function(id) {
     # ── Tab 10: Importancia ─────────────────────────────────────────────────
     importancia <- reactive({
       req(modelo_final(), train_data(), input$y_pre)
-      vip::vi(modelo_final(), method = "permute",
-        train  = train_data(),
-        target = input$y_pre,
-        metric = "rmse",
-        pred_wrapper = function(object, newdata) {
-          stats::predict(object, new_data = newdata)$.pred
-        }
+      explicador <- DALEX::explain(
+        model            = modelo_final(),
+        data             = train_data()[, input$x_pre, drop = FALSE],
+        y                = train_data()[[input$y_pre]],
+        predict_function = function(model, newdata)
+          stats::predict(model, new_data = newdata)$.pred,
+        label            = "modelo",
+        verbose          = FALSE
       )
+      mp <- DALEX::model_parts(explicador, B = 10, type = "difference")
+      as.data.frame(mp) |>
+        dplyr::filter(!variable %in% c("_baseline_", "_full_model_")) |>
+        dplyr::group_by(Variable = variable) |>
+        dplyr::summarise(Importance = mean(dropout_loss), .groups = "drop") |>
+        dplyr::arrange(dplyr::desc(Importance)) |>
+        as.data.frame()
     })
     output$plot_importancia <- renderPlot({
       req(importancia())
@@ -821,7 +829,7 @@ mod_xgb_reg_server <- function(id) {
       vars_str <- paste0('c("', paste(input$x_pre, collapse = '", "'), '")')
       glue::glue('
 library(tidymodels)
-library(vip)
+library(DALEX)
 
 # Datos
 data("your_dataset")
@@ -879,11 +887,10 @@ predict(fit, new_data = test) |>
   metrics(truth = {input$y_pre}, estimate = .pred)
 
 # Importancia (permutación)
-vi(fit, method = "permute",
-   train  = train,
-   target = "{input$y_pre}",
-   metric = "rmse",
-   pred_wrapper = function(object, newdata) predict(object, new_data = newdata)$.pred)
+explicador <- explain(fit, data = train[, c({vars_str})],
+                       y = train${input$y_pre},
+                       predict_function = function(o, nd) predict(o, new_data = nd)$.pred)
+model_parts(explicador, B = 10, type = "difference")
       ')
     })
 

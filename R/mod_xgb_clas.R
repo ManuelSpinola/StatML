@@ -829,16 +829,30 @@ mod_xgb_clas_server <- function(id) {
       req(modelo_final(), train_data(), input$y_pre)
       lvls     <- levels(factor(train_data()[[input$y_pre]]))
       prob_col <- paste0(".pred_", lvls[2])
-      vip::vi(modelo_final(), method = "permute",
-        train  = train_data(),
-        target = input$y_pre,
-        metric = "roc_auc",
-        pred_wrapper = function(object, newdata) {
-          p <- stats::predict(object, new_data = newdata, type = "prob")
+      y_num    <- as.numeric(factor(train_data()[[input$y_pre]]) == lvls[2])
+
+      explicador <- DALEX::explain(
+        model            = modelo_final(),
+        data             = train_data()[, input$x_pre, drop = FALSE],
+        y                = y_num,
+        predict_function = function(model, newdata) {
+          p <- stats::predict(model, new_data = newdata, type = "prob")
           p[[prob_col]]
         },
-        smaller_is_better = FALSE
+        type             = "classification",
+        label            = "modelo",
+        verbose          = FALSE
       )
+
+      mp <- DALEX::model_parts(explicador, B = 10, type = "difference",
+                               loss_function = DALEX::loss_one_minus_auc)
+
+      as.data.frame(mp) |>
+        dplyr::filter(!variable %in% c("_baseline_", "_full_model_")) |>
+        dplyr::group_by(Variable = variable) |>
+        dplyr::summarise(Importance = mean(dropout_loss), .groups = "drop") |>
+        dplyr::arrange(dplyr::desc(Importance)) |>
+        as.data.frame()
     })
     output$plot_importancia <- renderPlot({
       req(importancia())
@@ -906,7 +920,7 @@ mod_xgb_clas_server <- function(id) {
       vars_str <- paste0('c("', paste(input$x_pre, collapse = '", "'), '")')
       glue::glue('
 library(tidymodels)
-library(vip)
+library(DALEX)
 
 # Datos
 data("your_dataset")

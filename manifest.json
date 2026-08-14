@@ -1,7 +1,7 @@
 {
   "version": 1,
   "locale": "en_US",
-  "platform": "4.6.0",
+  "platform": "4.6.1",
   "metadata": {
     "appmode": "shiny",
     "primary_rmd": null,
@@ -15,6 +15,40 @@
     }
   },
   "packages": {
+    "DALEX": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "DALEX",
+        "Title": "moDel Agnostic Language for Exploration and eXplanation",
+        "Version": "2.5.4",
+        "Authors@R": "c(person(\"Przemyslaw\", \"Biecek\", email = \"przemyslaw.biecek@gmail.com\", role = c(\"aut\", \"cre\"), \n             comment = c(ORCID = \"0000-0001-8423-1823\")),\n    person(\"Szymon\", \"Maksymiuk\", role = \"aut\",\n             comment = c(ORCID = \"0000-0002-3120-1601\")),\n    person(\"Hubert\", \"Baniecki\", role = \"aut\",\n             comment = c(ORCID = \"0000-0001-6661-5364\")))",
+        "Description": "Any unverified black box model is the path to failure. Opaqueness leads to distrust. \n  Distrust leads to ignoration. Ignoration leads to rejection. \n  DALEX package xrays any model and helps to explore and explain its behaviour.\n  Machine Learning (ML) models are widely used and have various applications in classification \n  or regression. Models created with boosting, bagging, stacking or similar techniques are often\n  used due to their high performance. But such black-box models usually lack direct interpretability.\n  DALEX package contains various methods that help to understand the link between input variables \n  and model output. Implemented methods help to explore the model on the level of a single instance \n  as well as a level of the whole dataset.\n  All model explainers are model agnostic and can be compared across different models.\n  DALEX package is the cornerstone for 'DrWhy.AI' universe of packages for visual model exploration.\n  Find more details in (Biecek 2018) <https://jmlr.org/papers/v19/18-416.html>.",
+        "License": "GPL",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "RoxygenNote": "7.3.2",
+        "Depends": "R (>= 3.5)",
+        "Imports": "ggplot2, iBreakDown (>= 1.3.1), ingredients (>= 2.0),\nkernelshap",
+        "Suggests": "gower, ranger, testthat, methods",
+        "URL": "https://modeloriented.github.io/DALEX/, https://dalex.drwhy.ai",
+        "BugReports": "https://github.com/ModelOriented/DALEX/issues",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-07-15 11:13:52 UTC; pbiecek",
+        "Author": "Przemyslaw Biecek [aut, cre] (ORCID:\n    <https://orcid.org/0000-0001-8423-1823>),\n  Szymon Maksymiuk [aut] (ORCID: <https://orcid.org/0000-0002-3120-1601>),\n  Hubert Baniecki [aut] (ORCID: <https://orcid.org/0000-0001-6661-5364>)",
+        "Maintainer": "Przemyslaw Biecek <przemyslaw.biecek@gmail.com>",
+        "Repository": "RSPM",
+        "Date/Publication": "2026-07-15 12:40:02 UTC",
+        "Built": "R 4.6.0; ; 2026-07-16 05:14:34 UTC; unix",
+        "RemoteType": "standard",
+        "RemoteRef": "DALEX",
+        "RemotePkgRef": "DALEX",
+        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "aarch64-apple-darwin23",
+        "RemoteSha": "2.5.4"
+      }
+    },
     "DT": {
       "Source": "CRAN",
       "Repository": "https://packagemanager.posit.co/cran/latest",
@@ -1536,6 +1570,42 @@
         "RemoteSha": "0.6.39"
       }
     },
+    "doFuture": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "doFuture",
+        "Version": "1.3.0",
+        "Title": "Use Foreach to Parallelize via the Future Framework",
+        "Depends": "foreach (>= 1.5.0), future (>= 1.49.0)",
+        "Imports": "future.apply, globals, iterators, parallel, utils",
+        "Suggests": "doRNG (>= 1.8.2), markdown, R.rsp",
+        "VignetteBuilder": "R.rsp",
+        "Authors@R": "c(person(\"Henrik\", \"Bengtsson\",\n                    role = c(\"aut\", \"cre\", \"cph\"),\n                    email = \"henrikb@braju.com\",\n                    comment = c(ORCID = \"0000-0002-7579-5165\")))",
+        "Description": "The 'future' package provides a unifying parallelization framework for R that supports many parallel and distributed backends <doi:10.32614/RJ-2021-048>. The 'foreach' package provides a powerful API for iterating over an R expression in parallel. The 'doFuture' package brings the best of the two together. There are three ways to use this package. The recommended approach is to use 'y <- foreach(...) %do% { ... } |> futurize()' via the 'futurize' package (<doi:10.48550/arXiv.2601.17578>). The second alternative, which was formerly recommended, is to use 'y <- foreach(...) %dofuture% { ... }', which does not require using 'registerDoFuture()' and has many advantages over '%dopar%'. The third alternative is the traditional 'foreach' approach by registering the 'foreach' adapter 'registerDoFuture()' and so that 'y <- foreach(...) %dopar% { ... }' parallelizes with the 'future' framework.",
+        "License": "Apache License (>= 2)",
+        "LazyLoad": "TRUE",
+        "URL": "https://doFuture.futureverse.org,\nhttps://github.com/futureverse/doFuture",
+        "BugReports": "https://github.com/futureverse/doFuture/issues",
+        "Language": "en-US",
+        "Encoding": "UTF-8",
+        "Config/roxygen2/version": "8.0.0",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-08-02 17:28:02 UTC; hb",
+        "Author": "Henrik Bengtsson [aut, cre, cph] (ORCID:\n    <https://orcid.org/0000-0002-7579-5165>)",
+        "Maintainer": "Henrik Bengtsson <henrikb@braju.com>",
+        "Repository": "RSPM",
+        "Date/Publication": "2026-08-03 05:10:22 UTC",
+        "Built": "R 4.6.0; ; 2026-08-04 05:15:27 UTC; unix",
+        "RemoteType": "standard",
+        "RemoteRef": "doFuture",
+        "RemotePkgRef": "doFuture",
+        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "aarch64-apple-darwin23",
+        "RemoteSha": "1.3.0"
+      }
+    },
     "dplyr": {
       "Source": "CRAN",
       "Repository": "https://packagemanager.posit.co/cran/latest",
@@ -2123,6 +2193,38 @@
         "RemoteSha": "1.0.2"
       }
     },
+    "gridExtra": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "gridExtra",
+        "Authors@R": "c(person(\"Baptiste\", \"Auguie\",\n    email = \"baptiste.auguie@vuw.ac.nz\",\n    role = c(\"aut\", \"cre\")), person(\"Anton\", \"Antonov\",\n    email = \"tonytonov@gmail.com\",\n    role = c(\"ctb\")))",
+        "License": "GPL (>= 2)",
+        "Title": "Miscellaneous Functions for \"Grid\" Graphics",
+        "Type": "Package",
+        "Description": "Provides a number of user-level functions to work with \"grid\"\n    graphics, notably to arrange multiple grid-based plots on a page, and draw\n    tables.",
+        "Version": "2.3.1",
+        "VignetteBuilder": "knitr",
+        "Imports": "gtable, grid, grDevices, graphics, utils",
+        "Suggests": "ggplot2, egg, lattice, knitr, testthat",
+        "RoxygenNote": "6.0.1",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-06-25 06:16:42 UTC; hornik",
+        "Author": "Baptiste Auguie [aut, cre],\n  Anton Antonov [ctb]",
+        "Maintainer": "Baptiste Auguie <baptiste.auguie@vuw.ac.nz>",
+        "Repository": "RSPM",
+        "Date/Publication": "2026-06-25 08:54:51 UTC",
+        "Encoding": "UTF-8",
+        "Built": "R 4.6.0; ; 2026-07-28 21:04:58 UTC; unix",
+        "RemoteType": "standard",
+        "RemoteRef": "gridExtra",
+        "RemotePkgRef": "gridExtra",
+        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "aarch64-apple-darwin23",
+        "RemoteSha": "2.3.1"
+      }
+    },
     "gtable": {
       "Source": "CRAN",
       "Repository": "https://packagemanager.posit.co/cran/latest",
@@ -2474,6 +2576,38 @@
         "RemoteSha": "1.2.2"
       }
     },
+    "iBreakDown": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "iBreakDown",
+        "Title": "Model Agnostic Instance Level Variable Attributions",
+        "Version": "2.1.2",
+        "Authors@R": "c(person(\"Przemyslaw\", \"Biecek\", email = \"przemyslaw.biecek@gmail.com\", role = c(\"aut\", \"cre\"), \n             comment = c(ORCID = \"0000-0001-8423-1823\")),\n    person(\"Alicja\", \"Gosiewska\", role = \"aut\",\n             comment = c(ORCID = \"0000-0001-6563-5742\")),\n    person(\"Hubert\", \"Baniecki\", role = \"aut\",\n             comment = c(ORCID = \"0000-0001-6661-5364\")),\n    person(\"Adam\", \"Izdebski\", role = \"aut\"),\n    person(\"Dariusz\", \"Komosinski\", role = \"ctb\"))",
+        "Description": "Model agnostic tool for decomposition of predictions from black boxes.\n    Supports additive attributions and attributions with interactions.\n    The Break Down Table shows contributions of every variable to a final prediction. \n    The Break Down Plot presents variable contributions in a concise graphical way. \n    This package works for classification and regression models. \n    It is an extension of the 'breakDown' package (Staniak and Biecek 2018) <doi:10.32614/RJ-2018-072>,\n    with new and faster strategies for orderings. \n    It supports interactions in explanations and has interactive visuals (implemented with 'D3.js' library). \n    The methodology behind is described in the 'iBreakDown' article (Gosiewska and Biecek 2019) <arXiv:1903.11420>\n    This package is a part of the 'DrWhy.AI' universe (Biecek 2018) <arXiv:1806.08915>.",
+        "Depends": "R (>= 3.5)",
+        "License": "GPL-3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.2.2",
+        "Imports": "ggplot2",
+        "Suggests": "DALEX, knitr, rmarkdown, randomForest, e1071, ranger, nnet,\ntestthat, r2d3, jsonlite, covr",
+        "VignetteBuilder": "knitr",
+        "URL": "https://ModelOriented.github.io/iBreakDown/,\nhttps://github.com/ModelOriented/iBreakDown",
+        "BugReports": "https://github.com/ModelOriented/iBreakDown/issues",
+        "NeedsCompilation": "no",
+        "Packaged": "2023-11-30 22:52:24 UTC; pbiecek",
+        "Author": "Przemyslaw Biecek [aut, cre] (<https://orcid.org/0000-0001-8423-1823>),\n  Alicja Gosiewska [aut] (<https://orcid.org/0000-0001-6563-5742>),\n  Hubert Baniecki [aut] (<https://orcid.org/0000-0001-6661-5364>),\n  Adam Izdebski [aut],\n  Dariusz Komosinski [ctb]",
+        "Maintainer": "Przemyslaw Biecek <przemyslaw.biecek@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2023-12-01 22:20:02 UTC",
+        "Built": "R 4.6.0; ; 2026-04-26 05:40:27 UTC; unix",
+        "RemoteType": "standard",
+        "RemotePkgRef": "iBreakDown",
+        "RemoteRef": "iBreakDown",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteSha": "2.1.2"
+      }
+    },
     "infer": {
       "Source": "CRAN",
       "Repository": "https://packagemanager.posit.co/cran/latest",
@@ -2509,6 +2643,38 @@
         "RemoteRef": "infer",
         "RemoteRepos": "https://cran.rstudio.com",
         "RemoteSha": "1.1.0"
+      }
+    },
+    "ingredients": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "ingredients",
+        "Title": "Effects and Importances of Model Ingredients",
+        "Version": "2.3.0",
+        "Authors@R": "c(person(\"Przemyslaw\", \"Biecek\", email = \"przemyslaw.biecek@gmail.com\",\n                  role = c(\"aut\", \"cre\"),\n                  comment = c(ORCID = \"0000-0001-8423-1823\")),\n              person(\"Hubert\", \"Baniecki\", role = \"aut\",\n                  comment = c(ORCID = \"0000-0001-6661-5364\")),\n              person(\"Adam\", \"Izdebski\", role = \"ctb\"))",
+        "Description": "Collection of tools for assessment of feature importance and feature effects.\n    Key functions are:\n    feature_importance() for assessment of global level feature importance,\n    ceteris_paribus() for calculation of the what-if plots,\n    partial_dependence() for partial dependence plots,\n    conditional_dependence() for conditional dependence plots,\n    accumulated_dependence() for accumulated local effects plots,\n    aggregate_profiles() and cluster_profiles() for aggregation of ceteris paribus profiles,\n    generic print() and plot() for better usability of selected explainers,\n    generic plotD3() for interactive, D3 based explanations, and\n    generic describe() for explanations in natural language.\n    The package 'ingredients' is a part of the 'DrWhy.AI' universe (Biecek 2018) <arXiv:1806.08915>.",
+        "Depends": "R (>= 3.5)",
+        "License": "GPL-3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.2.3",
+        "Imports": "ggplot2, scales, gridExtra, methods",
+        "Suggests": "DALEX, gower, ranger, testthat, r2d3, jsonlite, knitr,\nrmarkdown, covr",
+        "URL": "https://ModelOriented.github.io/ingredients/,\nhttps://github.com/ModelOriented/ingredients",
+        "BugReports": "https://github.com/ModelOriented/ingredients/issues",
+        "VignetteBuilder": "knitr",
+        "NeedsCompilation": "no",
+        "Packaged": "2023-01-14 23:08:04 UTC; pbiecek",
+        "Author": "Przemyslaw Biecek [aut, cre] (<https://orcid.org/0000-0001-8423-1823>),\n  Hubert Baniecki [aut] (<https://orcid.org/0000-0001-6661-5364>),\n  Adam Izdebski [ctb]",
+        "Maintainer": "Przemyslaw Biecek <przemyslaw.biecek@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2023-01-15 11:40:02 UTC",
+        "Built": "R 4.6.0; ; 2026-04-26 05:41:02 UTC; unix",
+        "RemoteType": "standard",
+        "RemotePkgRef": "ingredients",
+        "RemoteRef": "ingredients",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteSha": "2.3.0"
       }
     },
     "insight": {
@@ -2733,6 +2899,38 @@
         "RemoteRef": "jsonlite",
         "RemoteRepos": "https://cran.rstudio.com",
         "RemoteSha": "2.0.0"
+      }
+    },
+    "kernelshap": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "kernelshap",
+        "Title": "Kernel SHAP",
+        "Version": "0.9.1",
+        "Authors@R": "c(\n    person(\"Michael\", \"Mayer\", , \"mayermichael79@gmail.com\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0009-0007-2540-9629\")),\n    person(\"David\", \"Watson\", , \"david.s.watson11@gmail.com\", role = \"aut\",\n           comment = c(ORCID = \"0000-0001-9632-2159\")),\n    person(\"Przemyslaw\", \"Biecek\", , \"przemyslaw.biecek@gmail.com\", role = \"ctb\",\n           comment = c(ORCID = \"0000-0001-8423-1823\"))\n  )",
+        "Description": "Efficient implementation of Kernel SHAP (Lundberg and Lee,\n    2017, <doi:10.48550/arXiv.1705.07874>) permutation SHAP, and additive\n    SHAP for model interpretability.  For Kernel SHAP and permutation\n    SHAP, if the number of features is too large for exact calculations,\n    the algorithms iterate until the SHAP values are sufficiently precise\n    in terms of their standard errors.  The package integrates smoothly\n    with meta-learning packages such as 'tidymodels', 'caret' or 'mlr3'.\n    It supports multi-output models, case weights, and parallel\n    computations.  Visualizations can be done using the R package\n    'shapviz'.",
+        "License": "GPL (>= 2)",
+        "Depends": "R (>= 3.2.0)",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "Imports": "doFuture, foreach, stats, utils",
+        "Suggests": "testthat (>= 3.0.0)",
+        "Config/testthat/edition": "3",
+        "URL": "https://github.com/ModelOriented/kernelshap",
+        "BugReports": "https://github.com/ModelOriented/kernelshap/issues",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-09-20 13:58:39 UTC; mayer",
+        "Author": "Michael Mayer [aut, cre] (ORCID:\n    <https://orcid.org/0009-0007-2540-9629>),\n  David Watson [aut] (ORCID: <https://orcid.org/0000-0001-9632-2159>),\n  Przemyslaw Biecek [ctb] (ORCID:\n    <https://orcid.org/0000-0001-8423-1823>)",
+        "Maintainer": "Michael Mayer <mayermichael79@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-09-20 14:20:02 UTC",
+        "Built": "R 4.6.0; ; 2026-04-26 05:38:37 UTC; unix",
+        "RemoteType": "standard",
+        "RemotePkgRef": "kernelshap",
+        "RemoteRef": "kernelshap",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteSha": "0.9.1"
       }
     },
     "knitr": {
@@ -5387,7 +5585,7 @@
     },
     "vip": {
       "Source": "CRAN",
-      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "Repository": null,
       "description": {
         "Package": "vip",
         "Type": "Package",
@@ -5817,13 +6015,13 @@
       "checksum": "f882cbaf1dc436e1c44fae59820131ae"
     },
     ".Rprofile": {
-      "checksum": "a500f705832875271577ec15b3c7fc8a"
+      "checksum": "3dcc154868279ba4be53b3cfd7a8d94b"
     },
     "app.R": {
       "checksum": "f6a3c802e5766a70574dfef0219dd76a"
     },
     "DESCRIPTION": {
-      "checksum": "7de5293930db656070e1a6c91e7b47b2"
+      "checksum": "c282d797842a79688dedf1a62d22a908"
     },
     "dev/run_dev.R": {
       "checksum": "7fd3203c9ff5d206859c974bfdfa8ffc"
@@ -5883,7 +6081,7 @@
       "checksum": "839ec31a916615f193a789353bb7a12e"
     },
     "R/app_ui_StatML.R": {
-      "checksum": "79d74864f35cc0b204d8685f37fa6288"
+      "checksum": "fa994d4342798195d06c4602aa8c50f7"
     },
     "R/golem_utils.R": {
       "checksum": "37cff64de8d5f2d2b597e269598acd23"
@@ -5898,22 +6096,22 @@
       "checksum": "a389b7fb109c1aeb5bf482dcd2b22ea6"
     },
     "R/mod_glm_ml.R": {
-      "checksum": "9be81e29492a1bc2b4ba0d7dc6e05d9f"
+      "checksum": "a49d8b8a970ad50c6031f68c4066cf6f"
     },
     "R/mod_lm_ml.R": {
-      "checksum": "1c4e3deadcc9f8fa1730d8781badd3cc"
+      "checksum": "e64eece8774035ec5f154ee59518f9d2"
     },
     "R/mod_rf_clas.R": {
-      "checksum": "089c51b8ba4bb9cbccbeeccf104ed182"
+      "checksum": "313a90ddc640483c4a7f544439461a71"
     },
     "R/mod_rf_reg.R": {
-      "checksum": "8cafc2edfaafe8bb9962786035f6f839"
+      "checksum": "581d7001d9966957c69648e407d5b73a"
     },
     "R/mod_xgb_clas.R": {
-      "checksum": "7a420040eec83d101fb05f8837392688"
+      "checksum": "a6c624551fb077c3890729615f721481"
     },
     "R/mod_xgb_reg.R": {
-      "checksum": "023492037b39f4db2a42996250f90531"
+      "checksum": "b9ef5f4036eea288bcfd30a5f26476af"
     },
     "R/run_app.R": {
       "checksum": "dcea8ec391d2d937ecc0c97dfd638db9"
@@ -5925,7 +6123,7 @@
       "checksum": "12bf789e041c1225c31680c3e7f4b4b7"
     },
     "renv.lock": {
-      "checksum": "5367da91dc688dd7a793ff5c69e0e7ed"
+      "checksum": "1f5c864c4587296b7c79ec3994e78951"
     }
   },
   "users": null

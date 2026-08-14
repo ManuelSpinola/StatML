@@ -1542,13 +1542,24 @@ mod_lm_ml_server <- function(id) {
       tryCatch({
         wf_fit <- tune::extract_workflow(modelo_ajustado())
         train  <- rsample::training(split_datos())
-        vip::vi(wf_fit,
-                method       = "permute",
-                target       = input$var_respuesta,
-                metric       = "rmse",
-                pred_wrapper = function(object, newdata) predict(object, newdata)$.pred,
-                train        = train,
-                nsim         = 10)
+
+        explicador <- DALEX::explain(
+          model            = wf_fit,
+          data             = train[, input$predictores, drop = FALSE],
+          y                = train[[input$var_respuesta]],
+          predict_function = function(model, newdata) predict(model, newdata)$.pred,
+          label            = "modelo",
+          verbose          = FALSE
+        )
+
+        mp <- DALEX::model_parts(explicador, B = 10, type = "difference")
+
+        as.data.frame(mp) |>
+          dplyr::filter(!variable %in% c("_baseline_", "_full_model_")) |>
+          dplyr::group_by(Variable = variable) |>
+          dplyr::summarise(Importance = mean(dropout_loss), .groups = "drop") |>
+          dplyr::arrange(dplyr::desc(Importance)) |>
+          as.data.frame()
       }, error = function(e) {
         showNotification(paste("Error en importancia:", conditionMessage(e)),
                          type = "error", duration = 6)
@@ -1657,8 +1668,11 @@ mod_lm_ml_server <- function(id) {
         "metricas <- collect_metrics(ajuste)\n",
         "preds    <- collect_predictions(ajuste)\n\n",
         "# Importancia de variables\n",
-        "library(vip)\n",
-        "vi(ajuste$.workflow[[1]])\n"
+        "library(DALEX)\n",
+        "explicador <- explain(ajuste$.workflow[[1]], data = train[, predictores],\n",
+        "                       y = train$", input$var_respuesta, ",\n",
+        "                       predict_function = function(m, nd) predict(m, nd)$.pred)\n",
+        "model_parts(explicador, B = 10, type = 'difference')\n"
       )
     })
 

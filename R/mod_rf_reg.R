@@ -1644,13 +1644,24 @@ mod_rf_reg_server <- function(id) {
       tryCatch({
         wf_fit <- tune::extract_workflow(modelo_ajustado())
         train  <- rsample::training(split_datos())
-        vip::vi(wf_fit,
-                method       = "permute",
-                target       = input$var_respuesta,
-                metric       = "rmse",
-                pred_wrapper = function(object, newdata) predict(object, newdata)$.pred,
-                train        = train,
-                nsim         = 10)
+
+        explicador <- DALEX::explain(
+          model            = wf_fit,
+          data             = train[, input$predictores, drop = FALSE],
+          y                = train[[input$var_respuesta]],
+          predict_function = function(model, newdata) predict(model, newdata)$.pred,
+          label            = "modelo",
+          verbose          = FALSE
+        )
+
+        mp <- DALEX::model_parts(explicador, B = 10, type = "difference")
+
+        as.data.frame(mp) |>
+          dplyr::filter(!variable %in% c("_baseline_", "_full_model_")) |>
+          dplyr::group_by(Variable = variable) |>
+          dplyr::summarise(Importance = mean(dropout_loss), .groups = "drop") |>
+          dplyr::arrange(dplyr::desc(Importance)) |>
+          as.data.frame()
       }, error = function(e) {
         showNotification(paste("Error en importancia:", conditionMessage(e)),
                          type = "error", duration = 6)
@@ -1751,11 +1762,11 @@ mod_rf_reg_server <- function(id) {
         "# Ajuste final\najuste   <- last_fit(wf_fin, split)\n",
         "metricas <- collect_metrics(ajuste)\n",
         "preds    <- collect_predictions(ajuste)\n\n",
-        "# Importancia\nlibrary(vip)\n",
-        "vi(extract_workflow(ajuste), method = 'permute',\n",
-        "   target = '", input$var_respuesta, "', metric = 'rmse',\n",
-        "   pred_wrapper = function(o, nd) predict(o, nd)$.pred,\n",
-        "   train = train)\n"
+        "# Importancia\nlibrary(DALEX)\n",
+        "explicador <- explain(extract_workflow(ajuste), data = train[, predictores],\n",
+        "                       y = train$", input$var_respuesta, ",\n",
+        "                       predict_function = function(o, nd) predict(o, nd)$.pred)\n",
+        "model_parts(explicador, B = 10, type = 'difference')\n"
       )
     })
 

@@ -1837,15 +1837,28 @@ mod_rf_clas_server <- function(id) {
         wf_fit  <- tune::extract_workflow(modelo_ajustado())
         train   <- rsample::training(split_datos())
         niveles <- levels(train[[input$var_respuesta]])
-        vip::vi(wf_fit,
-                method       = "permute",
-                target       = input$var_respuesta,
-                metric       = "roc_auc",
-                event_level  = "second",
-                pred_wrapper = function(object, newdata)
-                  predict(object, newdata, type = "prob")[[paste0(".pred_", niveles[2])]],
-                train        = train,
-                nsim         = 10)
+        y_num   <- as.numeric(train[[input$var_respuesta]] == niveles[2])
+
+        explicador <- DALEX::explain(
+          model            = wf_fit,
+          data             = train[, input$predictores, drop = FALSE],
+          y                = y_num,
+          predict_function = function(model, newdata)
+            predict(model, newdata, type = "prob")[[paste0(".pred_", niveles[2])]],
+          type             = "classification",
+          label            = "modelo",
+          verbose          = FALSE
+        )
+
+        mp <- DALEX::model_parts(explicador, B = 10, type = "difference",
+                                 loss_function = DALEX::loss_one_minus_auc)
+
+        as.data.frame(mp) |>
+          dplyr::filter(!variable %in% c("_baseline_", "_full_model_")) |>
+          dplyr::group_by(Variable = variable) |>
+          dplyr::summarise(Importance = mean(dropout_loss), .groups = "drop") |>
+          dplyr::arrange(dplyr::desc(Importance)) |>
+          as.data.frame()
       }, error = function(e) {
         showNotification(paste("Error en importancia:", conditionMessage(e)),
                          type = "error", duration = 6)
@@ -1951,13 +1964,14 @@ mod_rf_clas_server <- function(id) {
         "# Ajuste final\najuste   <- last_fit(wf_fin, split,\n",
         "  metrics = metric_set(roc_auc, accuracy, sensitivity, specificity))\n",
         "metricas <- collect_metrics(ajuste)\npreds <- collect_predictions(ajuste)\n\n",
-        "# Importancia\nlibrary(vip)\nniveles <- levels(train$", input$var_respuesta, ")\n",
-        "vi(extract_workflow(ajuste), method = 'permute',\n",
-        "   target = '", input$var_respuesta, "', metric = 'roc_auc',\n",
-        "   event_level = 'second',\n",
-        "   pred_wrapper = function(o, nd)\n",
-        "     predict(o, nd, type = 'prob')[[paste0('.pred_', niveles[2])]],\n",
-        "   train = train)\n"
+        "# Importancia\nlibrary(DALEX)\nniveles <- levels(train$", input$var_respuesta, ")\n",
+        "explicador <- explain(extract_workflow(ajuste), data = train[, predictores],\n",
+        "                       y = as.numeric(train$", input$var_respuesta, " == niveles[2]),\n",
+        "                       predict_function = function(o, nd)\n",
+        "                         predict(o, nd, type = 'prob')[[paste0('.pred_', niveles[2])]],\n",
+        "                       type = 'classification')\n",
+        "model_parts(explicador, B = 10, type = 'difference',\n",
+        "            loss_function = loss_one_minus_auc)\n"
       )
     })
 
