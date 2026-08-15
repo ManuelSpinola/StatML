@@ -480,11 +480,11 @@ mod_rf_reg_ui <- function(id) {
                 )
               ),
               div(class = "card mb-3",
-                div(class = "card-header", "División train/test"),
+                div(class = "card-header", "División entrenamiento/prueba"),
                 div(class = "card-body",
                   sliderInput(ns("prop_train"),
                     label = "Proporción entrenamiento",
-                    min = 0.5, max = 0.9, value = 0.8, step = 0.05,
+                    min = 50, max = 90, value = 80, step = 5,
                     post = "%"
                   ),
                   numericInput(ns("semilla"),
@@ -618,7 +618,7 @@ mod_rf_reg_ui <- function(id) {
 
           div(style = "border-left: 4px solid #1170AA; padding-left: 1rem; margin-bottom: 1.5rem;",
             h4(style = "color: #1170AA; font-weight: 700; margin-bottom: 0.2rem;",
-               bsicons::bs_icon("diagram-2", class = "me-2"), "Hold-out (Train / Test)"),
+               bsicons::bs_icon("diagram-2", class = "me-2"), "Hold-out (entrenamiento / prueba)"),
             p(class = "small text-muted mb-3",
               "El modelo final se entrena con el ", strong("conjunto de entrenamiento"),
               " y se evalúa con el ", strong("conjunto de prueba."))
@@ -1102,7 +1102,7 @@ mod_rf_reg_server <- function(id) {
     split_datos <- reactive({
       req(datos_modelo())
       set.seed(input$semilla)
-      rsample::initial_split(datos_modelo(), prop = input$prop_train)
+      rsample::initial_split(datos_modelo(), prop = input$prop_train / 100)
     })
 
     output$resumen_preprocesamiento <- renderUI({
@@ -1737,8 +1737,8 @@ mod_rf_reg_server <- function(id) {
         encabezado_script("StatML", "Random Forest Regresi\u00f3n"),
         "library(tidymodels)\nlibrary(ranger)\n\n",
         "# Cargar datos\n# datos <- read_excel('tus_datos.xlsx')\n\n",
-        "# División train/test\nset.seed(", input$semilla, ")\n",
-        "split <- initial_split(datos, prop = ", input$prop_train, ")\n",
+        "# División entrenamiento/prueba\nset.seed(", input$semilla, ")\n",
+        "split <- initial_split(datos, prop = ", input$prop_train / 100, ")\n",
         "train <- training(split)\ntest  <- testing(split)\n\n",
         "# Receta\nreceta <- recipe(", input$var_respuesta, " ~ ",
         paste(input$predictores, collapse = " + "), ", data = train)",

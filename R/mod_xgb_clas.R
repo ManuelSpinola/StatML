@@ -155,17 +155,36 @@ mod_xgb_clas_ui <- function(id) {
       bslib::nav_panel(
         "Explorar",
         icon = bsicons::bs_icon("bar-chart"),
-        br(),
-        fluidRow(
-          column(4,
-            uiOutput(ns("sel_y_exp")),
-            uiOutput(ns("sel_x_exp"))
+        div(class = "p-3",
+          fluidRow(
+            column(4,
+              div(class = "card",
+                div(class = "card-header", "Opciones"),
+                div(class = "card-body",
+                  uiOutput(ns("sel_y_exp")),
+                  uiOutput(ns("sel_x_exp")),
+                  selectInput(ns("tipo_grafico_explorar"),
+                    label   = "Tipo de gráfico",
+                    choices = c("Boxplot"          = "boxplot",
+                                "Violín"           = "violin",
+                                "Barras (conteo)"  = "bar",
+                                "Correlación"      = "corr")
+                  )
+                )
+              )
+            ),
+            column(8,
+              plotly::plotlyOutput(ns("plot_exp"), height = "450px")
+            )
+          ),
+          br(),
+          fluidRow(
+            column(12,
+              h5("Balance de clases"),
+              uiOutput(ns("balance_clases"))
+            )
           )
-        ),
-        plotOutput(ns("plot_exp"), height = "400px"),
-        hr(),
-        h5("Distribución de clases"),
-        plotOutput(ns("plot_clases"), height = "250px")
+        )
       ),
 
       # ── 5. Preprocesamiento ──────────────────────────────────────────────
@@ -179,7 +198,7 @@ mod_xgb_clas_ui <- function(id) {
             uiOutput(ns("sel_x_pre")),
             hr(),
             sliderInput(ns("prop_train"), "Proporción entrenamiento",
-              min = 0.5, max = 0.9, value = 0.75, step = 0.05),
+              min = 50, max = 90, value = 75, step = 5, post = "%"),
             numericInput(ns("semilla"), "Semilla", value = 123, step = 1),
             hr(),
             checkboxInput(ns("normalizar"), "Estandarizar predictores (step_normalize)", value = TRUE),
@@ -474,30 +493,73 @@ mod_xgb_clas_server <- function(id) {
       vars_num <- names(dplyr::select(datos_raw(), where(is.numeric)))
       selectInput(ns("x_exp"), "Variable predictora (X)", choices = vars_num)
     })
-    output$plot_exp <- renderPlot({
-      req(input$y_exp, input$x_exp)
-      df <- datos_raw()
-      ggplot2::ggplot(df, ggplot2::aes(x = .data[[input$y_exp]],
-                                        y = .data[[input$x_exp]],
-                                        fill = .data[[input$y_exp]])) +
-        ggplot2::geom_boxplot(alpha = 0.7) +
-        ggplot2::geom_jitter(width = 0.2, alpha = 0.3, size = 1) +
-        ggplot2::scale_fill_manual(values = stat_palette()) +
-        stat_theme() +
-        ggplot2::theme(legend.position = "none") +
-        ggplot2::labs(x = input$y_exp, y = input$x_exp)
+    output$plot_exp <- plotly::renderPlotly({
+      req(input$y_exp, input$tipo_grafico_explorar)
+      df  <- datos_raw()
+      y_v <- input$y_exp
+
+      p <- switch(input$tipo_grafico_explorar,
+        "boxplot" = {
+          req(input$x_exp)
+          ggplot2::ggplot(df, ggplot2::aes(x = .data[[y_v]], y = .data[[input$x_exp]],
+                                            fill = .data[[y_v]])) +
+            ggplot2::geom_boxplot(alpha = 0.7) +
+            ggplot2::geom_jitter(width = 0.2, alpha = 0.3, size = 1) +
+            scale_fill_tableau_cb() +
+            ggplot2::theme(legend.position = "none") +
+            ggplot2::labs(x = y_v, y = input$x_exp)
+        },
+        "violin" = {
+          req(input$x_exp)
+          ggplot2::ggplot(df, ggplot2::aes(x = .data[[y_v]], y = .data[[input$x_exp]],
+                                            fill = .data[[y_v]])) +
+            ggplot2::geom_violin(alpha = 0.7) +
+            scale_fill_tableau_cb() +
+            ggplot2::theme(legend.position = "none") +
+            ggplot2::labs(x = y_v, y = input$x_exp)
+        },
+        "bar" = ggplot2::ggplot(df, ggplot2::aes(x = .data[[y_v]], fill = .data[[y_v]])) +
+          ggplot2::geom_bar() +
+          scale_fill_tableau_cb() +
+          ggplot2::theme(legend.position = "none") +
+          ggplot2::labs(x = y_v, y = "Frecuencia"),
+        "corr" = {
+          vars_num <- names(df)[sapply(df, is.numeric)]
+          cor_mat  <- cor(df[, vars_num], use = "complete.obs")
+          cor_df   <- as.data.frame(as.table(cor_mat))
+          names(cor_df) <- c("Var1", "Var2", "Correlacion")
+          ggplot2::ggplot(cor_df, ggplot2::aes(x = Var1, y = Var2, fill = Correlacion)) +
+            ggplot2::geom_tile() +
+            ggplot2::scale_fill_gradient2(low = colores$peligro, high = colores$primario,
+                                          mid = "white", midpoint = 0) +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+        }
+      )
+      plotly::ggplotly(p + ggplot2::theme_minimal() + ggplot2::labs(title = NULL))
     })
-    output$plot_clases <- renderPlot({
-      req(input$y_exp)
-      df <- datos_raw()
-      ggplot2::ggplot(df, ggplot2::aes(x = .data[[input$y_exp]],
-                                        fill = .data[[input$y_exp]])) +
-        ggplot2::geom_bar() +
-        ggplot2::scale_fill_manual(values = stat_palette()) +
-        stat_theme() +
-        ggplot2::theme(legend.position = "none") +
-        ggplot2::labs(x = input$y_exp, y = "Frecuencia",
-                      title = "Distribución de clases")
+
+    output$balance_clases <- renderUI({
+      req(datos_raw(), input$y_exp)
+      df  <- datos_raw()
+      y_v <- input$y_exp
+      tab <- table(df[[y_v]])
+      n   <- sum(tab)
+      paleta <- colores$tableau
+      fluidRow(
+        lapply(seq_along(tab), function(i) {
+          clase <- names(tab)[i]
+          pct   <- round(100 * tab[i] / n, 1)
+          color <- paleta[((i - 1) %% length(paleta)) + 1]
+          column(3, div(
+            style = "background:#fff; border:1px solid #C8D9EC; border-radius:8px;
+                     padding:1rem; text-align:center; margin-bottom:0.5rem;",
+            div(style = paste0("font-size:1.8rem; font-weight:700; color:", color, ";"),
+                tab[i]),
+            div(style = "font-size:0.82rem; color:#57606C;",
+                paste0("Clase ", clase, " (", pct, "%)"))
+          ))
+        })
+      )
     })
 
     # ── Tab 5: Preprocesamiento ─────────────────────────────────────────────
@@ -518,7 +580,7 @@ mod_xgb_clas_server <- function(id) {
       df <- datos_raw()[, c(input$y_pre, input$x_pre), drop = FALSE]
       df[[input$y_pre]] <- factor(df[[input$y_pre]])
       set.seed(input$semilla)
-      rsample::initial_split(df, prop = input$prop_train,
+      rsample::initial_split(df, prop = input$prop_train / 100,
                              strata = !!rlang::sym(input$y_pre))
     })
     train_data <- reactive({ rsample::training(split_obj()) })
@@ -612,7 +674,7 @@ mod_xgb_clas_server <- function(id) {
     output$plot_tuning <- renderPlot({
       req(tune_results())
       tune::autoplot(tune_results(), metric = "roc_auc") +
-        stat_theme() +
+        ggplot2::theme_minimal() +
         ggplot2::labs(title = "AUC-ROC por combinación de hiperparámetros")
     })
     output$tabla_best <- renderTable({
@@ -712,7 +774,7 @@ mod_xgb_clas_server <- function(id) {
                             estimate = .pred_class) |>
         ggplot2::autoplot(type = "heatmap") +
         ggplot2::scale_fill_gradient(low = "white", high = stat_palette()[1]) +
-        stat_theme() +
+        ggplot2::theme_minimal() +
         ggplot2::labs(title = "Matriz de confusión — prueba",
                       subtitle = paste0("n = ", nrow(test_data()), " de ",
                                         nrow(train_data()) + nrow(test_data()),
@@ -733,7 +795,7 @@ mod_xgb_clas_server <- function(id) {
         ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "dashed",
                              color = "gray50") +
         ggplot2::scale_color_manual(values = stat_palette()[1]) +
-        stat_theme() +
+        ggplot2::theme_minimal() +
         ggplot2::labs(title = "Curva ROC — prueba")
     })
 
@@ -861,7 +923,7 @@ mod_xgb_clas_server <- function(id) {
         ggplot2::ggplot(ggplot2::aes(x = Importance,
                                       y = reorder(Variable, Importance))) +
         ggplot2::geom_col(fill = stat_palette()[1]) +
-        stat_theme() +
+        ggplot2::theme_minimal() +
         ggplot2::labs(x = "Importancia (AUC)", y = NULL,
                       title = "Importancia de variables — permutación")
     })
@@ -907,7 +969,7 @@ mod_xgb_clas_server <- function(id) {
       } else {
         p <- p + ggplot2::geom_col(fill = stat_palette()[1])
       }
-      p + stat_theme() +
+      p + ggplot2::theme_minimal() +
         ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
         ggplot2::labs(x = var,
                       y = paste0("P(", lvls[2], ") promedio"),
@@ -929,7 +991,7 @@ df${input$y_pre} <- factor(df${input$y_pre})
 
 # División estratificada
 set.seed({input$semilla})
-split <- initial_split(df, prop = {input$prop_train}, strata = {input$y_pre})
+split <- initial_split(df, prop = {input$prop_train / 100}, strata = {input$y_pre})
 train <- training(split)
 test  <- testing(split)
 

@@ -30,7 +30,7 @@ mod_acerca_de_ui <- function(id) {
                 tags$ul(class = "small mb-0",
                   tags$li(strong("Regresión lineal (LM)"),
                     " — Predicción de variables continuas con mínimos cuadrados.
-                      Enfoque predictivo con train/test y validación cruzada."),
+                      Enfoque predictivo con entrenamiento/prueba y validación cruzada."),
                   tags$li(strong("Random Forest Regresión"),
                     " — Ensemble de árboles para regresión. Captura relaciones
                       no lineales e interacciones. Tuning de hiperparámetros con grid search.")

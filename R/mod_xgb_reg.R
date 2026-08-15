@@ -148,14 +148,37 @@ mod_xgb_reg_ui <- function(id) {
       bslib::nav_panel(
         "Explorar",
         icon = bsicons::bs_icon("bar-chart"),
-        br(),
-        fluidRow(
-          column(4,
-            uiOutput(ns("sel_y_exp")),
-            uiOutput(ns("sel_x_exp"))
+        div(class = "p-3",
+          fluidRow(
+            column(4,
+              div(class = "card",
+                div(class = "card-header", "Opciones"),
+                div(class = "card-body",
+                  uiOutput(ns("sel_y_exp")),
+                  uiOutput(ns("sel_x_exp")),
+                  selectInput(ns("tipo_grafico_explorar"),
+                    label   = "Tipo de gráfico",
+                    choices = c("Dispersión"  = "scatter",
+                                "Histograma"  = "hist",
+                                "Boxplot"     = "boxplot",
+                                "Correlación" = "corr")
+                  ),
+                  uiOutput(ns("sel_color_explorar"))
+                )
+              )
+            ),
+            column(8,
+              plotly::plotlyOutput(ns("plot_exp"), height = "450px")
+            )
+          ),
+          br(),
+          fluidRow(
+            column(12,
+              h5("Resumen estadístico"),
+              DT::DTOutput(ns("tabla_resumen_explorar"))
+            )
           )
-        ),
-        plotOutput(ns("plot_exp"), height = "400px")
+        )
       ),
 
       # ── 5. Preprocesamiento ──────────────────────────────────────────────
@@ -169,7 +192,7 @@ mod_xgb_reg_ui <- function(id) {
             uiOutput(ns("sel_x_pre")),
             hr(),
             sliderInput(ns("prop_train"), "Proporción entrenamiento",
-              min = 0.5, max = 0.9, value = 0.75, step = 0.05),
+              min = 50, max = 90, value = 75, step = 5, post = "%"),
             numericInput(ns("semilla"), "Semilla", value = 123, step = 1),
             hr(),
             checkboxInput(ns("normalizar"), "Estandarizar predictores (step_normalize)", value = TRUE),
@@ -452,26 +475,80 @@ mod_xgb_reg_server <- function(id) {
     })
     output$sel_x_exp <- renderUI({
       req(input$y_exp)
-      selectInput(ns("x_exp"), "Variable predictora (X)",
+      selectInput(ns("x_exp"), "Variable X",
         choices = setdiff(names(datos_raw()), input$y_exp))
     })
-    output$plot_exp <- renderPlot({
+    output$sel_color_explorar <- renderUI({
+      req(datos_raw())
+      vars_cat <- c("Ninguna", names(datos_raw())[sapply(datos_raw(), function(x) is.character(x) || is.factor(x))])
+      selectInput(ns("color_explorar"), "Color por", choices = vars_cat)
+    })
+    output$plot_exp <- plotly::renderPlotly({
       req(input$y_exp, input$x_exp)
+      df  <- datos_raw()
+      y_v <- input$y_exp
+      x_v <- input$x_exp
+      col <- if (!is.null(input$color_explorar) && input$color_explorar != "Ninguna")
+               input$color_explorar else NULL
+
+      p <- switch(input$tipo_grafico_explorar,
+        "scatter" = {
+          x_is_cat <- is.factor(df[[x_v]]) || is.character(df[[x_v]])
+          geom_pts <- if (x_is_cat)
+            ggplot2::geom_jitter(alpha = 0.5, width = 0.2, height = 0)
+          else
+            ggplot2::geom_point(alpha = 0.6)
+          if (!is.null(col)) {
+            ggplot2::ggplot(df, ggplot2::aes(x = .data[[x_v]], y = .data[[y_v]],
+                                              color = .data[[col]])) +
+              geom_pts +
+              ggplot2::geom_smooth(method = "lm", formula = y ~ x, se = TRUE) +
+              scale_color_tableau_cb()
+          } else {
+            ggplot2::ggplot(df, ggplot2::aes(x = .data[[x_v]], y = .data[[y_v]])) +
+              geom_pts +
+              ggplot2::geom_smooth(method = "lm", formula = y ~ x, se = TRUE, color = colores$acento)
+          }
+        },
+        "hist" = ggplot2::ggplot(df, ggplot2::aes(x = .data[[y_v]])) +
+          ggplot2::geom_histogram(fill = colores$primario, color = "white", bins = 30),
+        "boxplot" = ggplot2::ggplot(df, ggplot2::aes(x = .data[[x_v]], y = .data[[y_v]])) +
+          ggplot2::geom_boxplot(fill = colores$secundario),
+        "corr" = {
+          vars_n  <- names(df)[sapply(df, is.numeric)]
+          cor_mat <- cor(df[, vars_n], use = "complete.obs")
+          cor_df  <- as.data.frame(as.table(cor_mat))
+          names(cor_df) <- c("Var1", "Var2", "Correlacion")
+          ggplot2::ggplot(cor_df, ggplot2::aes(x = Var1, y = Var2, fill = Correlacion)) +
+            ggplot2::geom_tile() +
+            ggplot2::scale_fill_gradient2(low = colores$peligro, high = colores$primario,
+                                          mid = "white", midpoint = 0) +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+        }
+      )
+      plotly::ggplotly(p + ggplot2::theme_minimal() +
+        ggplot2::labs(title = NULL))
+    })
+
+    output$tabla_resumen_explorar <- DT::renderDT({
+      req(datos_raw())
       df <- datos_raw()
-      x_var <- input$x_exp
-      y_var <- input$y_exp
-      p <- ggplot2::ggplot(df, ggplot2::aes(x = .data[[x_var]], y = .data[[y_var]]))
-      if (is.numeric(df[[x_var]])) {
-        p <- p +
-          ggplot2::geom_point(alpha = 0.6, color = stat_palette()[1]) +
-          ggplot2::geom_smooth(method = "loess", formula = y ~ x,
-                               color = stat_palette()[2], se = TRUE)
-      } else {
-        p <- p +
-          ggplot2::geom_boxplot(fill = stat_palette()[1], alpha = 0.6) +
-          ggplot2::geom_jitter(width = 0.2, alpha = 0.4, color = stat_palette()[2])
-      }
-      p + stat_theme() + ggplot2::labs(x = x_var, y = y_var)
+      vars_n <- names(df)[sapply(df, is.numeric)]
+      resumen <- do.call(rbind, lapply(vars_n, function(v) {
+        x <- df[[v]]
+        data.frame(
+          Variable = v,
+          Min      = round(min(x, na.rm = TRUE), 3),
+          Media    = round(mean(x, na.rm = TRUE), 3),
+          Mediana  = round(median(x, na.rm = TRUE), 3),
+          Max      = round(max(x, na.rm = TRUE), 3),
+          SD       = round(sd(x, na.rm = TRUE), 3),
+          `NA`     = sum(is.na(x)),
+          check.names = FALSE
+        )
+      }))
+      DT::datatable(resumen, options = list(pageLength = 10, dom = "tip"),
+                    rownames = FALSE)
     })
 
     # ── Tab 5: Preprocesamiento ─────────────────────────────────────────────
@@ -489,7 +566,7 @@ mod_xgb_reg_server <- function(id) {
       req(input$y_pre, input$x_pre)
       df <- datos_raw()[, c(input$y_pre, input$x_pre), drop = FALSE]
       set.seed(input$semilla)
-      rsample::initial_split(df, prop = input$prop_train)
+      rsample::initial_split(df, prop = input$prop_train / 100)
     })
     train_data <- reactive({ rsample::training(split_obj()) })
     test_data  <- reactive({ rsample::testing(split_obj()) })
@@ -569,7 +646,7 @@ mod_xgb_reg_server <- function(id) {
     output$plot_tuning <- renderPlot({
       req(tune_results())
       tune::autoplot(tune_results(), metric = "rmse") +
-        stat_theme() +
+        ggplot2::theme_minimal() +
         ggplot2::labs(title = "RMSE por combinación de hiperparámetros")
     })
     output$tabla_best <- renderTable({
@@ -650,7 +727,7 @@ mod_xgb_reg_server <- function(id) {
         ggplot2::geom_point(alpha = 0.6, color = stat_palette()[1]) +
         ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray40") +
         ggplot2::geom_smooth(method = "lm", formula = y ~ x, color = stat_palette()[2], se = FALSE) +
-        stat_theme() +
+        ggplot2::theme_minimal() +
         ggplot2::labs(x = "Observado", y = "Predicho",
                       title = "Observado vs. Predicho — conjunto de prueba")
     })
@@ -662,7 +739,7 @@ mod_xgb_reg_server <- function(id) {
         ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "gray40") +
         ggplot2::geom_smooth(method = "loess", formula = y ~ x,
                              color = stat_palette()[2], se = TRUE) +
-        stat_theme() +
+        ggplot2::theme_minimal() +
         ggplot2::labs(x = "Predicho", y = "Residuo", title = "Residuos vs. Predicho")
     })
 
@@ -775,7 +852,7 @@ mod_xgb_reg_server <- function(id) {
         ggplot2::ggplot(ggplot2::aes(x = Importance,
                                       y = reorder(Variable, Importance))) +
         ggplot2::geom_col(fill = stat_palette()[1]) +
-        stat_theme() +
+        ggplot2::theme_minimal() +
         ggplot2::labs(x = "Importancia (RMSE)", y = NULL,
                       title = "Importancia de variables — permutación")
     })
@@ -818,7 +895,7 @@ mod_xgb_reg_server <- function(id) {
       } else {
         p <- p + ggplot2::geom_col(fill = stat_palette()[1])
       }
-      p + stat_theme() +
+      p + ggplot2::theme_minimal() +
         ggplot2::labs(x = var, y = paste("Predicción promedio de", input$y_pre),
                       title = paste("PDP —", var))
     })
@@ -837,7 +914,7 @@ df <- your_dataset[, c("{input$y_pre}", {vars_str})]
 
 # División
 set.seed({input$semilla})
-split  <- initial_split(df, prop = {input$prop_train})
+split  <- initial_split(df, prop = {input$prop_train / 100})
 train  <- training(split)
 test   <- testing(split)
 

@@ -51,7 +51,7 @@ mod_lm_ml_ui <- function(id) {
                         tags$li("¿Qué tan bien predice el modelo?"),
                         tags$li("¿Generaliza a datos nuevos?"),
                         tags$li("RMSE, R², MAE en datos de prueba"),
-                        tags$li("Train/test split, validación cruzada")
+                        tags$li("División entrenamiento/prueba, validación cruzada")
                       )
                     )
                   )
@@ -108,12 +108,12 @@ mod_lm_ml_ui <- function(id) {
             column(8,
               h4("Fundamentos de la regresión lineal predictiva"),
               bslib::navset_pill(
-                bslib::nav_panel("Train/Test split",
+                bslib::nav_panel("División entrenamiento/prueba",
                   br(),
                   p("El principio fundamental del ML predictivo es evaluar el modelo
                     en datos que", strong("nunca vio durante el entrenamiento.")),
                   br(),
-                  # Esquema visual train/test
+                  # Esquema visual entrenamiento/prueba
                   div(style = "max-width: 600px;",
                     div(style = "display: flex; height: 60px; border-radius: 8px; overflow: hidden; border: 1px solid #C8D9EC;",
                       div(style = "background: #1170AA; width: 80%; display: flex; align-items: center; justify-content: center;",
@@ -354,11 +354,11 @@ mod_lm_ml_ui <- function(id) {
                 )
               ),
               div(class = "card mb-3",
-                div(class = "card-header", "División train/test"),
+                div(class = "card-header", "División entrenamiento/prueba"),
                 div(class = "card-body",
                   sliderInput(ns("prop_train"),
                     label = "Proporción entrenamiento",
-                    min = 0.5, max = 0.9, value = 0.8, step = 0.05,
+                    min = 50, max = 90, value = 80, step = 5,
                     post = "%"
                   ),
                   numericInput(ns("semilla"),
@@ -477,7 +477,7 @@ mod_lm_ml_ui <- function(id) {
           # ── Hold-out ──────────────────────────────
           div(style = "border-left: 4px solid #1170AA; padding-left: 1rem; margin-bottom: 1.5rem;",
             h4(style = "color: #1170AA; font-weight: 700; margin-bottom: 0.2rem;",
-               bsicons::bs_icon("diagram-2", class = "me-2"), "Hold-out (Train / Test)"),
+               bsicons::bs_icon("diagram-2", class = "me-2"), "Hold-out (entrenamiento / prueba)"),
             p(class = "small text-muted mb-3",
               "El modelo se entrena con el ", strong("conjunto de entrenamiento"),
               " y se evalúa con el ", strong("conjunto de prueba"),
@@ -997,7 +997,7 @@ mod_lm_ml_server <- function(id) {
     split_datos <- reactive({
       req(datos_modelo())
       set.seed(input$semilla)
-      rsample::initial_split(datos_modelo(), prop = input$prop_train)
+      rsample::initial_split(datos_modelo(), prop = input$prop_train / 100)
     })
 
     output$resumen_preprocesamiento <- renderUI({
@@ -1646,9 +1646,9 @@ mod_lm_ml_server <- function(id) {
         "library(tidymodels)\n\n",
         "# Cargar datos\n",
         "# datos <- read_excel('tus_datos.xlsx')\n\n",
-        "# División train/test\n",
+        "# División entrenamiento/prueba\n",
         "set.seed(", input$semilla, ")\n",
-        "split <- initial_split(datos, prop = ", input$prop_train, ")\n",
+        "split <- initial_split(datos, prop = ", input$prop_train / 100, ")\n",
         "train <- training(split)\n",
         "test  <- testing(split)\n\n",
         "# Receta de preprocesamiento\n",

@@ -461,10 +461,10 @@ mod_rf_clas_ui <- function(id) {
                 div(class = "card-body", uiOutput(ns("sel_predictores")))
               ),
               div(class = "card mb-3",
-                div(class = "card-header", "División train/test"),
+                div(class = "card-header", "División entrenamiento/prueba"),
                 div(class = "card-body",
                   sliderInput(ns("prop_train"), "Proporción entrenamiento",
-                    min = 0.5, max = 0.9, value = 0.8, step = 0.05, post = "%"),
+                    min = 50, max = 90, value = 80, step = 5, post = "%"),
                   numericInput(ns("semilla"), "Semilla", value = 123, min = 1, step = 1),
                   checkboxInput(ns("strata"), "Muestreo estratificado (recomendado)", value = TRUE)
                 )
@@ -581,7 +581,7 @@ mod_rf_clas_ui <- function(id) {
 
           div(style = "border-left: 4px solid #1170AA; padding-left: 1rem; margin-bottom: 1.5rem;",
             h4(style = "color: #1170AA; font-weight: 700; margin-bottom: 0.2rem;",
-               bsicons::bs_icon("diagram-2", class = "me-2"), "Hold-out (Train / Test)"),
+               bsicons::bs_icon("diagram-2", class = "me-2"), "Hold-out (entrenamiento / prueba)"),
             p(class = "small text-muted mb-0",
               "Comparar métricas en train y test permite detectar overfitting."),
             br(),
@@ -1114,10 +1114,10 @@ mod_rf_clas_server <- function(id) {
       req(datos_modelo())
       set.seed(input$semilla)
       if (isTRUE(input$strata))
-        rsample::initial_split(datos_modelo(), prop = input$prop_train,
+        rsample::initial_split(datos_modelo(), prop = input$prop_train / 100,
                                strata = input$var_respuesta)
       else
-        rsample::initial_split(datos_modelo(), prop = input$prop_train)
+        rsample::initial_split(datos_modelo(), prop = input$prop_train / 100)
     })
 
     output$resumen_preprocesamiento <- renderUI({
@@ -1937,8 +1937,8 @@ mod_rf_clas_server <- function(id) {
         "library(tidymodels)\nlibrary(ranger)\nlibrary(pROC)\n\n",
         "# Cargar datos\n# datos <- read_excel('tus_datos.xlsx')\n",
         "datos$", input$var_respuesta, " <- as.factor(datos$", input$var_respuesta, ")\n\n",
-        "# División train/test estratificada\nset.seed(", input$semilla, ")\n",
-        "split <- initial_split(datos, prop = ", input$prop_train,
+        "# División entrenamiento/prueba estratificada\nset.seed(", input$semilla, ")\n",
+        "split <- initial_split(datos, prop = ", input$prop_train / 100,
         if (isTRUE(input$strata)) paste0(", strata = '", input$var_respuesta, "'") else "",
         ")\ntrain <- training(split)\ntest  <- testing(split)\n\n",
         "# Receta\nreceta <- recipe(", input$var_respuesta, " ~ ",

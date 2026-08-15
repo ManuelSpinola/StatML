@@ -101,6 +101,9 @@ tema_app <- bslib::bs_theme(
   .metrica-label { font-size: 0.82rem; color: #57606C; }
 ")
 
+# ── Paleta como vector (usada en mod_xgb_reg.R / mod_xgb_clas.R) ─
+stat_palette <- function() colores$tableau
+
 # ── Escalas ggplot2 (Tableau Color Blind) ─────────────────
 scale_fill_tableau_cb <- function(...) {
   ggplot2::scale_fill_manual(values = colores$tableau, ...)
